@@ -2,10 +2,10 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateGoogleUserDto } from './dto/create-google-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -17,37 +17,48 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
+  async findUserByEmail(email: string): Promise<User> {
+    const user = await this.usersRepository.findOne({
+      where: { email },
+    });
+    if (user) {
+      return user;
+    }
+    return null;
+  }
+
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
       const { email } = createUserDto;
-
-      const existingUser = await this.usersRepository.findOne({
-        where: { email },
-      });
+      const existingUser = await this.findUserByEmail(email);
       if (existingUser) {
         throw new BadRequestException('Email already in use');
       }
-
-      const newUser = this.usersRepository.create(createUserDto);
-
+      const newUserDto = {
+        ...createUserDto,
+        provider: 'local', // Set provider to local
+      };
+      const newUser = this.usersRepository.create(newUserDto);
       return this.usersRepository.save(newUser);
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
   }
 
-  findAll() {
-    return `This action returns all users`;
-  }
-
-  async findUserByEmail(email: string): Promise<User> {
+  async registerGoogleUser(dto: CreateGoogleUserDto): Promise<User> {
+    const { googleId } = dto;
     const user = await this.usersRepository.findOne({
-      where: { email },
+      where: { googleId },
     });
     if (!user) {
-      throw new NotFoundException('User not found');
+      const newUser = this.usersRepository.create(dto);
+      return this.usersRepository.save(newUser);
     }
     return user;
+  }
+
+  findAll() {
+    return `This action returns all users`;
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

@@ -10,19 +10,28 @@ import * as bcrypt from 'bcrypt';
 @Entity()
 export class User {
   @ObjectIdColumn()
-  _id: ObjectId;
+  id: ObjectId;
 
-  @Column()
-  firstName: string;
+  @Column({ nullable: true })
+  firstName?: string;
 
-  @Column()
-  lastName: string;
+  @Column({ nullable: true })
+  lastName?: string;
+
+  @Column({ nullable: true })
+  googleId?: string;
 
   @Column({ unique: true })
   email: string;
 
-  @Column()
-  password: string;
+  @Column({ nullable: true })
+  provider?: string;
+
+  @Column({ nullable: true })
+  avatar?: string;
+
+  @Column({ nullable: true })
+  password?: string;
 
   @BeforeInsert()
   emailToLowerCase() {
@@ -31,6 +40,12 @@ export class User {
 
   @BeforeInsert()
   async hashPassword() {
-    this.password = await bcrypt.hash(this.password, 10);
+    if (!this.provider || this.provider === 'local') {
+      if (this.password) {
+        this.password = await bcrypt.hash(this.password, 10);
+      } else {
+        throw new Error('Password is required for local users');
+      }
+    }
   }
 }

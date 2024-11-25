@@ -1,12 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { SigninUserDto } from 'src/users/dto/signin-user.dto';
 import { UsersService } from 'src/users/users.service';
-import { ObjectId } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-
-type UserResponse = { userId: ObjectId; email: string };
-type AuthResponse = { userId: ObjectId; accessToken: string; email: string };
 
 @Injectable()
 export class AuthService {
@@ -22,7 +17,7 @@ export class AuthService {
     return bcrypt.compare(inputPassword, hashedPassword);
   }
 
-  async authenticate(input: SigninUserDto): Promise<AuthResponse> {
+  async authenticate(input: AuthInput): Promise<AuthResponse> {
     const user = await this.validateUser(input);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -30,19 +25,69 @@ export class AuthService {
     return this.signIn(user);
   }
 
-  async validateUser(input: SigninUserDto): Promise<UserResponse> {
+  async validateUser(input: AuthInput): Promise<SignInData> {
     const user = await this.usersService.findUserByEmail(input.email);
-    if (user && (await this.comparePassword(input.password, user.password))) {
-      return { userId: user._id, email: user.email };
+    if (!user) {
+      return null;
     }
-    return null;
+    if (user && user.provider !== 'google') {
+      const isPasswordValid = await this.comparePassword(
+        input.password,
+        user.password,
+      );
+      if (!isPasswordValid) {
+        return null;
+      }
+      return {
+        userId: user.id.toHexString(),
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      };
+    }
   }
-  async signIn(user: UserResponse): Promise<AuthResponse> {
+  async signIn(user: SignInData): Promise<AuthResponse> {
     const tokenPayload = {
       sub: user.userId,
       email: user.email,
     };
     const accessToken = await this.jwtService.signAsync(tokenPayload);
-    return { userId: user.userId, accessToken, email: user.email };
+    return {
+      userId: user.userId,
+      accessToken,
+      email: user.email,
+    };
+  }
+
+  async auhtenticateGoogle(profile: GoogleData): Promise<AuthResponse> {
+    const user = await this.validateGoogleUser(profile);
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    return this.googleSignIn(user);
+  }
+
+  async validateGoogleUser(profile: GoogleData): Promise<any> {
+    const user = await this.usersService.registerGoogleUser(profile);
+    if (user) {
+      return user;
+    }
+    return null;
+  }
+
+  async googleSignIn(profile: GoogleData): Promise<AuthResponse> {
+    const tokenPayload = {
+      sub: profile.googleId,
+      email: profile.email,
+    };
+    const accessToken = await this.jwtService.signAsync(tokenPayload);
+    return {
+      userId: profile.googleId,
+      email: profile.email,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      avatar: profile.avatar,
+      accessToken,
+    };
   }
 }
