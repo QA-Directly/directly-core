@@ -25,11 +25,6 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Post(':id')
-  findOne(@Body('email') email: string) {
-    return this.usersService.findUserByEmail(email);
-  }
-
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
