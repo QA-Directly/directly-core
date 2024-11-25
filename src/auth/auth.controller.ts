@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { PassportLocalGuard } from './guards/passport-local.guards';
 import { PassportJwtGuard } from './guards/passport-jwt.guards';
 import { PassportGoogleGuard } from './guards/passport-google.guards';
+import { PassportFacebookGuard } from './guards/passport-facebook.guards';
 
 @Controller('auth')
 export class AuthController {
@@ -22,6 +23,16 @@ export class AuthController {
   @UseGuards(PassportGoogleGuard)
   async googleCallback(@Request() req) {
     return this.authService.googleSignIn(req.user);
+  }
+
+  @Get('facebook')
+  @UseGuards(PassportFacebookGuard)
+  async facebookLogin() {}
+
+  @Get('facebook/callback')
+  @UseGuards(PassportFacebookGuard)
+  async facebookCallback(@Request() req) {
+    return this.authService.facebookSignIn(req.user);
   }
 
   @Get('profile')
