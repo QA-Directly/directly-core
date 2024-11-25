@@ -28,6 +28,9 @@ export class User {
   provider?: string;
 
   @Column({ nullable: true })
+  facebookId?: string;
+
+  @Column({ nullable: true })
   avatar?: string;
 
   @Column({ nullable: true })

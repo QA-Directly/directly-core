@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { CreateGoogleUserDto } from './dto/create-google-user.dto';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -18,50 +11,35 @@ export class UsersService {
   ) {}
 
   async findUserByEmail(email: string): Promise<User> {
-    const user = await this.usersRepository.findOne({
-      where: { email },
-    });
-    if (user) {
-      return user;
-    }
-    return null;
-  }
-
-  async create(createUserDto: CreateUserDto): Promise<User> {
     try {
-      const { email } = createUserDto;
-      const existingUser = await this.findUserByEmail(email);
-      if (existingUser) {
-        throw new BadRequestException('Email already in use');
-      }
-      const newUserDto = {
-        ...createUserDto,
-        provider: 'local', // Set provider to local
-      };
-      const newUser = this.usersRepository.create(newUserDto);
-      return this.usersRepository.save(newUser);
+      const user = await this.usersRepository.findOne({ where: { email } });
+      return user || null;
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
   }
 
-  async registerGoogleUser(dto: CreateGoogleUserDto): Promise<User> {
-    const { googleId } = dto;
-    const user = await this.usersRepository.findOne({
-      where: { googleId },
-    });
-    if (!user) {
-      const newUser = this.usersRepository.create(dto);
-      return this.usersRepository.save(newUser);
+  async createUser(userData: Partial<User>): Promise<User> {
+    try {
+      if (userData.googleId) {
+        userData.provider = 'google';
+      } else if (userData.facebookId) {
+        userData.provider = 'facebook';
+      } else {
+        userData.provider = 'local';
+      }
+      const user = this.usersRepository.create(userData);
+      return this.usersRepository.save(user);
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
     }
-    return user;
   }
 
   findAll() {
     return `This action returns all users`;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
+  update(id: number, updateUserDto: Partial<User>) {
     return `This action updates a #${id} user`;
   }
 
