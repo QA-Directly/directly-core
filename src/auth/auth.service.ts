@@ -3,12 +3,14 @@ import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/users/entities/user.entity';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private emailService: EmailService,
   ) {}
 
   async comparePassword(
@@ -58,6 +60,44 @@ export class AuthService {
       accessToken,
       email: user.email,
     };
+  }
+  async forgotPassword(email: string): Promise<void> {
+    const foundUser = await this.usersService.findUserByEmail(email);
+    if (!foundUser) {
+      throw new UnauthorizedException('No user found for email: ' + email);
+    }
+    return this.sendPasswordResetLInk(email, foundUser);
+  }
+  async sendPasswordResetLInk(email: string, user: User): Promise<any> {
+    const payload = { email };
+    const token = await this.jwtService.signAsync(payload);
+    const resetTokenExpiration = new Date();
+    resetTokenExpiration.setHours(resetTokenExpiration.getHours() + 1);
+
+    await this.usersService.storeResetToken(
+      user.id,
+      token,
+      resetTokenExpiration,
+    );
+    const resetLink = `http://localhost:3000/auth/reset-password?token=${token}`;
+    await this.emailService.sendPasswordResetEmail(email, resetLink);
+
+    return { message: `Password reset link sent to ${email}` };
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<any> {
+    const user = await this.usersService.findUserByResetToken(token);
+    if (!user) {
+      throw new UnauthorizedException('Invalid or expired token');
+    }
+    const now = new Date();
+    if (now > user.resetTokenExpiration) {
+      throw new UnauthorizedException('Token expired');
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await this.usersService.updatePassword(user.id, hashedPassword);
+    await this.emailService.sendResetPasswordConfirmationEmail(user.email);
+    return { message: 'Password reset successfully' };
   }
 
   async authenticateGoogle(profile: GoogleData): Promise<AuthResponse> {

@@ -36,6 +36,12 @@ export class User {
   @Column({ nullable: true })
   password?: string;
 
+  @Column({ nullable: true })
+  resetToken?: string;
+
+  @Column({ nullable: true })
+  resetTokenExpiration?: Date;
+
   @BeforeInsert()
   emailToLowerCase() {
     this.email = this.email.toLowerCase();

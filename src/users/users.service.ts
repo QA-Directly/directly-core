@@ -2,6 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class UsersService {
@@ -35,6 +36,30 @@ export class UsersService {
     }
   }
 
+  async findUserByResetToken(resetToken: string): Promise<User> {
+    const user = await this.usersRepository.findOne({
+      where: { resetToken },
+    });
+    return user || null;
+  }
+
+  async storeResetToken(
+    userId: ObjectId,
+    resetToken: string,
+    resetTokenExpiration: Date,
+  ): Promise<void> {
+    await this.usersRepository.update(
+      { id: userId },
+      { resetToken: resetToken, resetTokenExpiration: resetTokenExpiration },
+    );
+  }
+  async updatePassword(userId: ObjectId, newPassword: string): Promise<any> {
+    await this.usersRepository.update(
+      { id: userId },
+      { password: newPassword, resetToken: null, resetTokenExpiration: null },
+    );
+    return { message: 'New password saved successfully' };
+  }
   findAll() {
     return `This action returns all users`;
   }

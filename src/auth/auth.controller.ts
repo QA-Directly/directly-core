@@ -1,4 +1,12 @@
-import { Controller, Post, UseGuards, Request, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseGuards,
+  Request,
+  Get,
+  Body,
+  Query,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { PassportLocalGuard } from './guards/passport-local.guards';
 import { PassportJwtGuard } from './guards/passport-jwt.guards';
@@ -13,6 +21,19 @@ export class AuthController {
   @UseGuards(PassportLocalGuard)
   async login(@Request() req) {
     return this.authService.signIn(req.user);
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body() { email }: { email: string }): Promise<void> {
+    return this.authService.forgotPassword(email);
+  }
+
+  @Post('reset-password')
+  async resetPassword(
+    @Query('token') token: string,
+    @Body('newPassword') newPassword: string,
+  ): Promise<void> {
+    return this.authService.resetPassword(token, newPassword);
   }
 
   @Get('google')
