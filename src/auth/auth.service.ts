@@ -62,7 +62,10 @@ export class AuthService {
 
   async authenticateGoogle(profile: GoogleData): Promise<AuthResponse> {
     const user = await this.validateGoogleUser(profile);
-    return this.googleSignIn(user);
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    return await this.googleSignIn(user);
   }
 
   async validateGoogleUser(profile: GoogleData): Promise<User> {
@@ -83,13 +86,14 @@ export class AuthService {
   }
 
   async googleSignIn(user: User): Promise<AuthResponse> {
+    const userId = user.id;
     const tokenPayload = {
-      sub: user.googleId,
+      sub: user.id.toHexString(),
       email: user.email,
     };
     const accessToken = await this.jwtService.signAsync(tokenPayload);
     return {
-      googleId: user.googleId,
+      userId: userId.toHexString(),
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -99,7 +103,10 @@ export class AuthService {
   }
   async authenticateFacebook(profile: FacebookData): Promise<AuthResponse> {
     const user = await this.validateFacebookUser(profile);
-    return this.googleSignIn(user);
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    return await this.googleSignIn(user);
   }
   async validateFacebookUser(profile: FacebookData): Promise<any> {
     const user = await this.usersService.findUserByEmail(profile.email);
@@ -112,16 +119,18 @@ export class AuthService {
       firstName: profile.firstName,
       lastName: profile.lastName,
       provider: profile.provider,
+      googleId: null,
     });
     return newUser;
   }
   async facebookSignIn(user: User): Promise<AuthResponse> {
     const tokenPayload = {
-      sub: user.facebookId,
+      sub: user.id.toHexString(),
       email: user.email,
     };
     const accessToken = await this.jwtService.signAsync(tokenPayload);
     return {
+      userId: user.id.toHexString(),
       facebookId: user.facebookId,
       email: user.email,
       firstName: user.firstName,

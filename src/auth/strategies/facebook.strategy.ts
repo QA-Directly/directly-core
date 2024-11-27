@@ -30,7 +30,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
       provider,
       accessToken,
     };
-    const payload = await this.authService.authenticateFacebook(user);
+    const payload = await this.authService.validateFacebookUser(user);
     done(null, payload);
   }
 }

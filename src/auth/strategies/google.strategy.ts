@@ -26,7 +26,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         lastName: name.familyName,
         avatar: photos?.[0]?.value,
       };
-      return await this.authService.authenticateGoogle(userProfile);
+      return await this.authService.validateGoogleUser(userProfile);
     } catch (error) {
       console.log('error', error);
     }
