@@ -1,5 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { MongoClient } from 'mongodb';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -8,8 +9,9 @@ export class AppService implements OnModuleInit {
   }
   private client: MongoClient;
 
-  constructor() {
-    this.client = new MongoClient(process.env.DATABASE_URL);
+  constructor(private readonly configService: ConfigService) {
+    const dbUrl = this.configService.get<string>('database.url');
+    this.client = new MongoClient(dbUrl);
   }
 
   async onModuleInit() {

@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
-@Entity()
+@Entity('users')
 export class User {
   @ObjectIdColumn()
   id: ObjectId;
@@ -28,10 +28,28 @@ export class User {
   provider?: string;
 
   @Column({ nullable: true })
+  facebookId?: string;
+
+  @Column({ nullable: true })
   avatar?: string;
 
   @Column({ nullable: true })
   password?: string;
+
+  @Column({ nullable: true, default: false })
+  isVerified?: boolean;
+
+  @Column({ nullable: true })
+  verificationToken?: string;
+
+  @Column({ nullable: true })
+  verificationTokenExpiration?: Date;
+
+  @Column({ nullable: true })
+  resetToken?: string;
+
+  @Column({ nullable: true })
+  resetTokenExpiration?: Date;
 
   @BeforeInsert()
   emailToLowerCase() {
