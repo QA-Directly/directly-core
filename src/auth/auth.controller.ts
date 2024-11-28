@@ -23,6 +23,11 @@ export class AuthController {
     return this.authService.signIn(req.user);
   }
 
+  @Get('verify-email')
+  async verifyEmail(@Query('t') token: string): Promise<void> {
+    return this.authService.verifyEmailToken(token);
+  }
+
   @Post('forgot-password')
   async forgotPassword(@Body() { email }: { email: string }): Promise<void> {
     return this.authService.forgotPassword(email);
@@ -30,7 +35,7 @@ export class AuthController {
 
   @Post('reset-password')
   async resetPassword(
-    @Query('token') token: string,
+    @Query('t') token: string,
     @Body('newPassword') newPassword: string,
   ): Promise<void> {
     return this.authService.resetPassword(token, newPassword);

@@ -18,6 +18,14 @@ export class EmailService {
     }
   }
 
+  async sendVerificationEmail(email: string, verificationLink: string) {
+    const mailOptions = {
+      to: email,
+      subject: 'Verify Your Email',
+      text: `Click the following link to verify your email: ${verificationLink}`,
+    };
+    return this.sendMail(mailOptions);
+  }
   async sendPasswordResetEmail(email: string, resetLink: string) {
     const mailOptions = {
       to: email,

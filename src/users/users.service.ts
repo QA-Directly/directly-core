@@ -3,12 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { ObjectId } from 'mongodb';
-
+import { EmailService } from 'src/email/email.service';
+import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private emailService: EmailService,
+    private jwtService: JwtService,
   ) {}
 
   async findUserByEmail(email: string): Promise<User> {
@@ -24,16 +27,43 @@ export class UsersService {
     try {
       if (userData.googleId) {
         userData.provider = 'google';
+        userData.isVerified = true;
       } else if (userData.facebookId) {
         userData.provider = 'facebook';
+        userData.isVerified = true;
       } else {
         userData.provider = 'local';
       }
       const user = this.usersRepository.create(userData);
-      return this.usersRepository.save(user);
+      if (user.provider === 'local') {
+        await this.handleLocalUserVerification(user);
+      }
+      await this.usersRepository.save(user);
+      return user;
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
+  }
+  async handleLocalUserVerification(user: User): Promise<void> {
+    const payload = { sub: user.id.toHexString(), email: user.email };
+    user.verificationToken = await this.jwtService.signAsync(payload);
+    user.verificationTokenExpiration = new Date(Date.now() + 30 * 60 * 1000);
+    const verificationLink = `http://localhost:3000/auth/verify-email?t=${user.verificationToken}`;
+    await this.emailService.sendVerificationEmail(user.email, verificationLink);
+  }
+
+  async findUserByVerificationToken(token: string): Promise<any> {
+    const user = await this.usersRepository.findOne({
+      where: { verificationToken: token },
+    });
+    if (!user || user.verificationTokenExpiration < new Date()) {
+      return null;
+    }
+    user.isVerified = true;
+    user.verificationToken = null;
+    user.verificationTokenExpiration = null;
+    await this.usersRepository.save(user);
+    return user || null;
   }
 
   async findUserByResetToken(resetToken: string): Promise<User> {

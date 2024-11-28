@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -33,21 +37,24 @@ export class AuthService {
     if (!user) {
       return null;
     }
-    if (user && user.provider !== 'google' && user.provider !== 'facebook') {
-      const isPasswordValid = await this.comparePassword(
-        input.password,
-        user.password,
+    if (!user.isVerified) {
+      throw new UnauthorizedException(
+        'Email not verified. Please verify email',
       );
-      if (!isPasswordValid) {
-        return null;
-      }
-      return {
-        userId: user.id.toHexString(),
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-      };
     }
+    const isPasswordValid = await this.comparePassword(
+      input.password,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      return null;
+    }
+    return {
+      userId: user.id.toHexString(),
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    };
   }
   async signIn(user: SignInData): Promise<AuthResponse> {
     const tokenPayload = {
@@ -61,6 +68,18 @@ export class AuthService {
       email: user.email,
     };
   }
+
+  async verifyEmailToken(token: string): Promise<any> {
+    if (!token) {
+      throw new BadRequestException('Invalid or missing token');
+    }
+    const user = await this.usersService.findUserByVerificationToken(token);
+    if (!user) {
+      throw new BadRequestException('Invalid or expired token');
+    }
+    return { message: 'Email verified successfully' };
+  }
+
   async forgotPassword(email: string): Promise<void> {
     const foundUser = await this.usersService.findUserByEmail(email);
     if (!foundUser) {
@@ -68,8 +87,9 @@ export class AuthService {
     }
     return this.sendPasswordResetLInk(email, foundUser);
   }
+
   async sendPasswordResetLInk(email: string, user: User): Promise<any> {
-    const payload = { email };
+    const payload = { email, sub: user.id.toHexString() };
     const token = await this.jwtService.signAsync(payload);
     const resetTokenExpiration = new Date();
     resetTokenExpiration.setHours(resetTokenExpiration.getHours() + 1);
@@ -79,7 +99,7 @@ export class AuthService {
       token,
       resetTokenExpiration,
     );
-    const resetLink = `http://localhost:3000/auth/reset-password?token=${token}`;
+    const resetLink = `http://localhost:3000/auth/reset-password?t=${token}`;
     await this.emailService.sendPasswordResetEmail(email, resetLink);
 
     return { message: `Password reset link sent to ${email}` };
