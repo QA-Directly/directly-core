@@ -5,6 +5,7 @@ import { User } from './entities/user.entity';
 import { ObjectId } from 'mongodb';
 import { EmailService } from 'src/email/email.service';
 import { JwtService } from '@nestjs/jwt';
+import { CreateUserDto } from './dto/create-user';
 @Injectable()
 export class UsersService {
   constructor(
@@ -23,7 +24,7 @@ export class UsersService {
     }
   }
 
-  async createUser(userData: Partial<User>): Promise<User> {
+  async createUser(userData: CreateUserDto): Promise<User> {
     try {
       if (userData.googleId) {
         userData.provider = 'google';
@@ -45,7 +46,7 @@ export class UsersService {
     }
   }
   async handleLocalUserVerification(user: User): Promise<void> {
-    const payload = { sub: user.id.toHexString(), email: user.email };
+    const payload = { sub: user.id, email: user.email };
     user.verificationToken = await this.jwtService.signAsync(payload);
     user.verificationTokenExpiration = new Date(Date.now() + 30 * 60 * 1000);
     const verificationLink = `http://localhost:3000/auth/verify-email?t=${user.verificationToken}`;

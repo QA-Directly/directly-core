@@ -1,21 +1,5 @@
-type AuthInput = { email: string; password: string };
-type SignInData = {
-  userId: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-};
-type AuthResponse = {
-  userId?: string;
-  accessToken: string;
-  googleId?: string;
-  email: string;
-  lastName?: string;
-  firstName?: string;
-  avatar?: string;
-  facebookId?: string;
-};
-type GoogleData = {
+export type AuthInput = { email: string; password: string };
+export type GoogleData = {
   googleId: string;
   email: string;
   firstName: string;
@@ -23,7 +7,7 @@ type GoogleData = {
   avatar: string;
   provider: string;
 };
-type FacebookData = {
+export type FacebookData = {
   provider: string;
   facebookId: string;
   email: string;

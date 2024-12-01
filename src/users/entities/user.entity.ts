@@ -12,8 +12,7 @@ export class User {
   @ObjectIdColumn()
   id: ObjectId;
 
-  @Column({ nullable: true })
-  firstName?: string;
+  firstName: string;
 
   @Column({ nullable: true })
   lastName?: string;
@@ -36,8 +35,8 @@ export class User {
   @Column({ nullable: true })
   password?: string;
 
-  @Column({ nullable: true, default: false })
-  isVerified?: boolean;
+  @Column({ default: false })
+  isVerified: boolean;
 
   @Column({ nullable: true })
   verificationToken?: string;
