@@ -7,15 +7,22 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { User } from './entities/user.entity';
+import { CreateUserDto } from './dto/create-user';
 
+@ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: Partial<User>) {
+  @ApiOperation({ summary: 'Create a new user' })
+  @ApiResponse({
+    status: 201,
+    description: 'The user has been successfully created.',
+  })
+  create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.createUser(createUserDto);
   }
 
@@ -25,7 +32,7 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: Partial<User>) {
+  update(@Param('id') id: string, @Body() updateUserDto: CreateUserDto) {
     return this.usersService.update(+id, updateUserDto);
   }
 

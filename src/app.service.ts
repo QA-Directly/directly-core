@@ -1,4 +1,8 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { MongoClient } from 'mongodb';
 import { ConfigService } from '@nestjs/config';
 
@@ -19,7 +23,7 @@ export class AppService implements OnModuleInit {
       await this.client.connect();
       console.log('MongoDB connected successfully');
     } catch (error) {
-      console.error('MongoDB connection failed:', error.message);
+      throw new InternalServerErrorException('Mongodb Error', error.message);
     } finally {
       await this.client.close();
     }

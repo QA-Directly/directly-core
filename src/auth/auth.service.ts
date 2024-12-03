@@ -1,13 +1,18 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { GoogleData, FacebookData } from './auth.types';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/users/entities/user.entity';
 import { EmailService } from 'src/email/email.service';
+import { LoginResponseDto } from 'src/users/dto/login-response.dto';
+import { SignInDto } from 'src/users/dto/signin-request.dto';
+import { AuthInputDto } from 'src/users/dto/auth-input.dto';
 
 @Injectable()
 export class AuthService {
@@ -24,7 +29,7 @@ export class AuthService {
     return bcrypt.compare(inputPassword, hashedPassword);
   }
 
-  async authenticate(input: AuthInput): Promise<AuthResponse> {
+  async authenticate(input: AuthInputDto): Promise<LoginResponseDto> {
     const user = await this.validateUser(input);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -32,38 +37,41 @@ export class AuthService {
     return this.signIn(user);
   }
 
-  async validateUser(input: AuthInput): Promise<SignInData> {
-    const user = await this.usersService.findUserByEmail(input.email);
-    if (!user) {
-      return null;
-    }
-    if (!user.isVerified) {
-      throw new UnauthorizedException(
-        'Email not verified. Please verify email',
+  async validateUser(input: AuthInputDto): Promise<SignInDto> {
+    try {
+      const user = await this.usersService.findUserByEmail(input.email);
+      if (!user) {
+        return null;
+      }
+      if (!user.isVerified) {
+        throw new UnauthorizedException(
+          'Email not verified. Please verify email',
+        );
+      }
+      const isPasswordValid = await this.comparePassword(
+        input.password,
+        user.password,
       );
+      if (!isPasswordValid) {
+        return null;
+      }
+      return {
+        userId: user.id,
+        email: user.email,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
     }
-    const isPasswordValid = await this.comparePassword(
-      input.password,
-      user.password,
-    );
-    if (!isPasswordValid) {
-      return null;
-    }
-    return {
-      userId: user.id.toHexString(),
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    };
   }
-  async signIn(user: SignInData): Promise<AuthResponse> {
+
+  async signIn(user: SignInDto): Promise<LoginResponseDto> {
     const tokenPayload = {
       sub: user.userId,
       email: user.email,
     };
     const accessToken = await this.jwtService.signAsync(tokenPayload);
     return {
-      userId: user.userId,
+      id: user.userId,
       accessToken,
       email: user.email,
     };
@@ -89,7 +97,7 @@ export class AuthService {
   }
 
   async sendPasswordResetLInk(email: string, user: User): Promise<any> {
-    const payload = { email, sub: user.id.toHexString() };
+    const payload = { email, sub: user.id };
     const token = await this.jwtService.signAsync(payload);
     const resetTokenExpiration = new Date();
     resetTokenExpiration.setHours(resetTokenExpiration.getHours() + 1);
@@ -120,7 +128,7 @@ export class AuthService {
     return { message: 'Password reset successfully' };
   }
 
-  async authenticateGoogle(profile: GoogleData): Promise<AuthResponse> {
+  async authenticateGoogle(profile: GoogleData): Promise<LoginResponseDto> {
     const user = await this.validateGoogleUser(profile);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -145,23 +153,19 @@ export class AuthService {
     return newUser;
   }
 
-  async googleSignIn(user: User): Promise<AuthResponse> {
-    const userId = user.id;
+  async googleSignIn(user: User): Promise<LoginResponseDto> {
     const tokenPayload = {
-      sub: user.id.toHexString(),
+      sub: user.id,
       email: user.email,
     };
     const accessToken = await this.jwtService.signAsync(tokenPayload);
     return {
-      userId: userId.toHexString(),
+      id: user.id,
       email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      avatar: user.avatar,
       accessToken,
     };
   }
-  async authenticateFacebook(profile: FacebookData): Promise<AuthResponse> {
+  async authenticateFacebook(profile: FacebookData): Promise<LoginResponseDto> {
     const user = await this.validateFacebookUser(profile);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -183,19 +187,19 @@ export class AuthService {
     });
     return newUser;
   }
-  async facebookSignIn(user: User): Promise<AuthResponse> {
+  async facebookSignIn(user: User): Promise<LoginResponseDto> {
     const tokenPayload = {
-      sub: user.id.toHexString(),
+      sub: user.id,
       email: user.email,
     };
     const accessToken = await this.jwtService.signAsync(tokenPayload);
     return {
-      userId: user.id.toHexString(),
-      facebookId: user.facebookId,
+      id: user.id,
       email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
       accessToken,
     };
+  }
+  async getProfile(email: string): Promise<User> {
+    return this.usersService.findUserByEmail(email);
   }
 }

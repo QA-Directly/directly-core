@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-google-oauth20';
 import { AuthService } from '../auth.service';
@@ -28,7 +28,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       };
       return await this.authService.validateGoogleUser(userProfile);
     } catch (error) {
-      console.log('error', error);
+      throw new InternalServerErrorException({
+        error,
+        message: 'Error validating Google user',
+      });
     }
   }
 }

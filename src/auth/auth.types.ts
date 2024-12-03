@@ -1,21 +1,8 @@
-type AuthInput = { email: string; password: string };
-type SignInData = {
-  userId: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-};
-type AuthResponse = {
-  userId?: string;
-  accessToken: string;
-  googleId?: string;
-  email: string;
-  lastName?: string;
-  firstName?: string;
-  avatar?: string;
-  facebookId?: string;
-};
-type GoogleData = {
+import { Request } from 'express';
+import { User } from 'src/users/entities/user.entity';
+
+export type AuthInput = { email: string; password: string };
+export type GoogleData = {
   googleId: string;
   email: string;
   firstName: string;
@@ -23,10 +10,19 @@ type GoogleData = {
   avatar: string;
   provider: string;
 };
-type FacebookData = {
+export type FacebookData = {
   provider: string;
   facebookId: string;
   email: string;
   firstName: string;
   lastName: string;
 };
+export interface AuthRequest extends Request {
+  user: {
+    userId: number;
+    email: string;
+  };
+}
+export interface SocialRequest extends Request {
+  user: User;
+}
