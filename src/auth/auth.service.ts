@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { GoogleData, FacebookData } from './auth.types';
@@ -55,22 +56,22 @@ export class AuthService {
         return null;
       }
       return {
-        id: user.id,
+        userId: user.id,
         email: user.email,
       };
     } catch (error) {
-      console.log(error);
+      throw new InternalServerErrorException(error.message);
     }
   }
 
   async signIn(user: SignInDto): Promise<LoginResponseDto> {
     const tokenPayload = {
-      sub: user.id,
+      sub: user.userId,
       email: user.email,
     };
     const accessToken = await this.jwtService.signAsync(tokenPayload);
     return {
-      userId: user.id,
+      id: user.userId,
       accessToken,
       email: user.email,
     };
@@ -153,14 +154,13 @@ export class AuthService {
   }
 
   async googleSignIn(user: User): Promise<LoginResponseDto> {
-    const userId = user.id;
     const tokenPayload = {
       sub: user.id,
       email: user.email,
     };
     const accessToken = await this.jwtService.signAsync(tokenPayload);
     return {
-      userId: userId,
+      id: user.id,
       email: user.email,
       accessToken,
     };
@@ -194,9 +194,12 @@ export class AuthService {
     };
     const accessToken = await this.jwtService.signAsync(tokenPayload);
     return {
-      userId: user.id,
+      id: user.id,
       email: user.email,
       accessToken,
     };
+  }
+  async getProfile(email: string): Promise<User> {
+    return this.usersService.findUserByEmail(email);
   }
 }

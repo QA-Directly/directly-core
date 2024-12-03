@@ -2,7 +2,6 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { ObjectId } from 'mongodb';
 import { EmailService } from 'src/email/email.service';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from './dto/create-user';
@@ -75,7 +74,7 @@ export class UsersService {
   }
 
   async storeResetToken(
-    userId: ObjectId,
+    userId: number,
     resetToken: string,
     resetTokenExpiration: Date,
   ): Promise<void> {
@@ -84,7 +83,7 @@ export class UsersService {
       { resetToken: resetToken, resetTokenExpiration: resetTokenExpiration },
     );
   }
-  async updatePassword(userId: ObjectId, newPassword: string): Promise<any> {
+  async updatePassword(userId: number, newPassword: string): Promise<any> {
     await this.usersRepository.update(
       { id: userId },
       { password: newPassword, resetToken: null, resetTokenExpiration: null },
