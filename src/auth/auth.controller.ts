@@ -29,6 +29,7 @@ import { ResetPasswordBodyDto } from 'src/users/dto/reser-password-body.dto';
 import { LoginResponseDto } from 'src/users/dto/login-response.dto';
 import { AuthRequest, SocialRequest } from './auth.types';
 import { SignInDto } from 'src/users/dto/signin-request.dto';
+import { CreateUserDto } from 'src/users/dto/create-user';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -126,6 +127,7 @@ export class AuthController {
   }
 
   @Get('google')
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Initiate Google OAuth2 login',
     description:
@@ -143,6 +145,7 @@ export class AuthController {
   async googleLogin() {}
 
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
   @Get('google/callback')
   @ApiOperation({
     summary: 'Handle Google OAuth2 callback',
@@ -164,6 +167,7 @@ export class AuthController {
   }
 
   @Get('facebook')
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Initiates Facebook OAuth2 login',
     description:
@@ -181,6 +185,7 @@ export class AuthController {
   async facebookLogin() {}
 
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
   @Get('facebook/callback')
   @ApiOperation({
     summary: 'Handle Facebook OAuth2 callback',
@@ -203,6 +208,16 @@ export class AuthController {
   }
 
   @Get('profile')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get user profile',
+    description: 'Returns the profile of the authenticated user.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile successfully retrieved',
+    type: CreateUserDto,
+  })
   @UseGuards(PassportJwtGuard)
   async getProfile(@Request() req: AuthRequest) {
     const email = req.user.email;
