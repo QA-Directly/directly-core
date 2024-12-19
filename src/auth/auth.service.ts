@@ -142,7 +142,7 @@ export class AuthService {
       token,
       resetTokenExpiration,
     );
-    const resetLink = `http://localhost:3000/auth/reset-password?t=${token}`;
+    const resetLink = `https://directly-core.onrender.com/auth/reset-password?t=${token}`;
     await this.emailService.sendPasswordResetEmail(email, resetLink);
 
     return { message: `Password reset link sent to ${email}` };
