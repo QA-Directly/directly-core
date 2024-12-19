@@ -7,7 +7,7 @@ export class LoginResponseDto {
     description: 'User ID of the authenticated user',
     example: '1234567890',
   })
-  id: number;
+  id: string;
 
   @IsString()
   @ApiProperty({
@@ -15,6 +15,13 @@ export class LoginResponseDto {
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
   })
   accessToken: string;
+
+  @IsString()
+  @ApiProperty({
+    description: 'JWT refresh token',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
+  refreshToken?: string;
 
   @IsEmail()
   @ApiProperty({

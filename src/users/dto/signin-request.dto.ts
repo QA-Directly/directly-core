@@ -1,4 +1,4 @@
-import { IsEmail, IsNumber } from 'class-validator';
+import { IsEmail, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class SignInDto {
@@ -13,6 +13,6 @@ export class SignInDto {
     description: 'User ID of the authenticated user',
     example: 1234567890,
   })
-  @IsNumber()
-  userId: number;
+  @IsString()
+  userId: string;
 }

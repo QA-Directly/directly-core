@@ -5,53 +5,60 @@ import { User } from './entities/user.entity';
 import { EmailService } from 'src/email/email.service';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from './dto/create-user';
+import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private emailService: EmailService,
-    private jwtService: JwtService,
   ) {}
-
-  async findUserByEmail(email: string): Promise<User> {
-    try {
-      const user = await this.usersRepository.findOne({ where: { email } });
-      return user || null;
-    } catch (error) {
-      throw new InternalServerErrorException(error.message);
+  async addProviderToUser(user: CreateUserDto) {
+    if (user.googleId) {
+      user.provider = 'google';
+    } else if (user.facebookId) {
+      user.provider = 'facebook';
+    } else {
+      user.provider = 'local';
     }
+    return user;
   }
-
-  async createUser(userData: CreateUserDto): Promise<User> {
+  async create(user: CreateUserDto): Promise<User> {
     try {
-      if (userData.googleId) {
-        userData.provider = 'google';
-        userData.isVerified = true;
-      } else if (userData.facebookId) {
-        userData.provider = 'facebook';
-        userData.isVerified = true;
-      } else {
-        userData.provider = 'local';
-      }
-      const user = this.usersRepository.create(userData);
+      const data = await this.addProviderToUser(user);
       if (user.provider === 'local') {
-        await this.handleLocalUserVerification(user);
+        return this.createLocalUser(data);
       }
-      await this.usersRepository.save(user);
-      return user;
+      return this.createOAuthUser(user);
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
   }
-  async handleLocalUserVerification(user: User): Promise<void> {
-    const payload = { sub: user.id, email: user.email };
-    user.verificationToken = await this.jwtService.signAsync(payload);
-    user.verificationTokenExpiration = new Date(Date.now() + 30 * 60 * 1000);
-    const verificationLink = `http://localhost:3000/auth/verify-email?t=${user.verificationToken}`;
-    await this.emailService.sendVerificationEmail(user.email, verificationLink);
-  }
 
+  async createOAuthUser(user: CreateUserDto): Promise<User> {
+    const newUser = this.usersRepository.create({ ...user, isVerified: true });
+    await this.usersRepository.save(newUser);
+    return newUser;
+  }
+  async createLocalUser(data: CreateUserDto): Promise<User> {
+    const user = this.usersRepository.create({
+      ...data,
+      password: await bcrypt.hash(data.password, 10),
+    });
+    await this.usersRepository.save(user);
+    // await this.handleLocalUserVerification(user);
+    return user;
+  }
+  // async handleLocalUserVerification(user: User): Promise<void> {
+  //   const payload = { sub: user.id, email: user.email };
+  //   user.verificationToken = await this.jwtService.signAsync(payload);
+  //   user.verificationTokenExpiration = new Date(Date.now() + 30 * 60 * 1000);
+  //   const verificationLink = `http://localhost:3000/auth/verify-email?t=${user.verificationToken}`;
+  //   await this.emailService.sendVerificationEmail(user.email, verificationLink);
+  // }
+  async findUser(query: Partial<User>): Promise<User> {
+    return this.usersRepository.findOne({ where: query });
+  }
   async findUserByVerificationToken(token: string): Promise<any> {
     const user = await this.usersRepository.findOne({
       where: { verificationToken: token },
@@ -59,22 +66,32 @@ export class UsersService {
     if (!user || user.verificationTokenExpiration < new Date()) {
       return null;
     }
+    return user;
+  }
+  async verifyEmail(token: string): Promise<any> {
+    const user = await this.findUserByVerificationToken(token);
+    if (!user) {
+      return { message: 'Invalid or expired token' };
+    }
     user.isVerified = true;
     user.verificationToken = null;
     user.verificationTokenExpiration = null;
-    await this.usersRepository.save(user);
-    return user || null;
+    const verifiedUser = await this.usersRepository.save(user);
+    return verifiedUser;
   }
 
   async findUserByResetToken(resetToken: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { resetToken },
     });
-    return user || null;
+    if (!user || user.resetTokenExpiration < new Date()) {
+      return null;
+    }
+    return user;
   }
 
   async storeResetToken(
-    userId: number,
+    userId: string,
     resetToken: string,
     resetTokenExpiration: Date,
   ): Promise<void> {
@@ -83,15 +100,19 @@ export class UsersService {
       { resetToken: resetToken, resetTokenExpiration: resetTokenExpiration },
     );
   }
-  async updatePassword(userId: number, newPassword: string): Promise<any> {
+  async updatePassword(userId: string, newPassword: string): Promise<any> {
     await this.usersRepository.update(
       { id: userId },
       { password: newPassword, resetToken: null, resetTokenExpiration: null },
     );
     return { message: 'New password saved successfully' };
   }
+  async updateUser(id: string, data: Partial<User>): Promise<any> {
+    return this.usersRepository.update({ id }, data);
+  }
+
   findAll() {
-    return `This action returns all users`;
+    return this.usersRepository.find();
   }
 
   update(id: number, updateUserDto: Partial<User>) {
