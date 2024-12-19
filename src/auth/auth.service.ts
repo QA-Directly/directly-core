@@ -120,6 +120,7 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException('Invalid or expired token');
     }
+
     return { message: 'Email verified successfully' };
   }
 
