@@ -94,9 +94,13 @@ export class AuthController {
   })
   @ApiResponse({ status: 200, description: 'Email successfully verified' })
   @ApiResponse({ status: 400, description: 'Invalid or expired token' })
-  async verifyEmail(@Query() query: VerifyEmailDto): Promise<void> {
+  async verifyEmail(
+    @Query() query: VerifyEmailDto,
+    @Res() res: Response,
+  ): Promise<void> {
     const { t } = query;
-    return this.authService.verifyEmailToken(t);
+    await this.authService.verifyEmailToken(t);
+    return res.redirect('https://directly-app.netlify.app/auth/verify-email');
   }
 
   @Post('forgot-password')
