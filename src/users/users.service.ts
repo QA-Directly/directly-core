@@ -52,7 +52,6 @@ export class UsersService {
   async createLocalUser(data: CreateUserDto): Promise<User> {
     const user = this.usersRepository.create({
       ...data,
-      isVerified: false,
       password: await bcrypt.hash(data.password, 10),
     });
     await this.usersRepository.save(user);
