@@ -8,6 +8,7 @@ import {
   HttpCode,
   Request,
   HttpStatus,
+  Res,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -18,10 +19,11 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { PassportLocalGuard } from './guards/passport-local.guards';
-import { PassportJwtGuard } from './guards/passport-jwt.guards';
+import { PassportLocalGuard } from './guards/local.guards';
+import { JwtAuthGuard } from './guards/jwt.guards';
 import { PassportGoogleGuard } from './guards/passport-google.guards';
 import { PassportFacebookGuard } from './guards/passport-facebook.guards';
+import { Response } from 'express';
 import { VerifyEmailDto } from 'src/users/dto/verify-email.dto';
 import { ForgotPasswordDto } from 'src/users/dto/forgot-password.dto';
 import { ResetPasswordQueryDto } from 'src/users/dto/reset-password-query.dto';
@@ -29,6 +31,10 @@ import { ResetPasswordBodyDto } from 'src/users/dto/reser-password-body.dto';
 import { LoginResponseDto } from 'src/users/dto/login-response.dto';
 import { AuthRequest, SocialRequest } from './auth.types';
 import { SignInDto } from 'src/users/dto/signin-request.dto';
+import { CreateUserDto } from 'src/users/dto/create-user';
+import { CurrentUser } from 'src/decorators/current-user.decorator';
+3;
+import { JwtRefreshAuthGuard } from './guards/jwt-refresh.guards';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -37,7 +43,7 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  @ApiBearerAuth()
+  @UseGuards(PassportLocalGuard)
   @ApiOperation({
     summary: 'Login user',
     description: 'Logs in a user with the provided credentials',
@@ -52,9 +58,25 @@ export class AuthController {
     type: LoginResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @UseGuards(PassportLocalGuard)
-  async login(@Request() req: AuthRequest): Promise<LoginResponseDto> {
-    const user = await this.authService.signIn(req.user);
+  async login(
+    @CurrentUser() user: SignInDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    await this.authService.signIn(user, response);
+    return user;
+  }
+
+  @Post('refresh')
+  @UseGuards(JwtRefreshAuthGuard)
+  @ApiOperation({
+    summary: 'Refresh user token',
+    description: 'Refreshes the user token using the refresh token.',
+  })
+  async refreshToken(
+    @CurrentUser() user: SignInDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    await this.authService.signIn(user, response);
     return user;
   }
 
@@ -72,9 +94,9 @@ export class AuthController {
   })
   @ApiResponse({ status: 200, description: 'Email successfully verified' })
   @ApiResponse({ status: 400, description: 'Invalid or expired token' })
-  async verifyEmail(@Query('t') query: VerifyEmailDto): Promise<void> {
-    const { token } = query;
-    return this.authService.verifyEmailToken(token);
+  async verifyEmail(@Query() query: VerifyEmailDto): Promise<void> {
+    const { t } = query;
+    return this.authService.verifyEmailToken(t);
   }
 
   @Post('forgot-password')
@@ -126,6 +148,7 @@ export class AuthController {
   }
 
   @Get('google')
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Initiate Google OAuth2 login',
     description:
@@ -143,6 +166,7 @@ export class AuthController {
   async googleLogin() {}
 
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
   @Get('google/callback')
   @ApiOperation({
     summary: 'Handle Google OAuth2 callback',
@@ -164,6 +188,7 @@ export class AuthController {
   }
 
   @Get('facebook')
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Initiates Facebook OAuth2 login',
     description:
@@ -203,7 +228,16 @@ export class AuthController {
   }
 
   @Get('profile')
-  @UseGuards(PassportJwtGuard)
+  @ApiOperation({
+    summary: 'Get user profile',
+    description: 'Returns the profile of the authenticated user.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile successfully retrieved',
+    type: CreateUserDto,
+  })
+  @UseGuards(JwtAuthGuard)
   async getProfile(@Request() req: AuthRequest) {
     const email = req.user.email;
     const userProfile = await this.authService.getProfile(email);
