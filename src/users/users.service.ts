@@ -3,15 +3,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { EmailService } from 'src/email/email.service';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from './dto/create-user';
 import * as bcrypt from 'bcrypt';
+
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private emailService: EmailService,
+    private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
   async addProviderToUser(user: CreateUserDto) {
     if (user.googleId) {
@@ -25,6 +29,10 @@ export class UsersService {
   }
   async create(user: CreateUserDto): Promise<User> {
     try {
+      const existingUser = await this.findUser({ email: user.email });
+      if (existingUser) {
+        throw new InternalServerErrorException('User already exists');
+      }
       const data = await this.addProviderToUser(user);
       if (user.provider === 'local') {
         return this.createLocalUser(data);
@@ -40,25 +48,32 @@ export class UsersService {
     await this.usersRepository.save(newUser);
     return newUser;
   }
+
   async createLocalUser(data: CreateUserDto): Promise<User> {
     const user = this.usersRepository.create({
       ...data,
+      isVerified: false,
       password: await bcrypt.hash(data.password, 10),
     });
     await this.usersRepository.save(user);
-    // await this.handleLocalUserVerification(user);
+    await this.handleLocalUserVerification(user);
     return user;
   }
-  // async handleLocalUserVerification(user: User): Promise<void> {
-  //   const payload = { sub: user.id, email: user.email };
-  //   user.verificationToken = await this.jwtService.signAsync(payload);
-  //   user.verificationTokenExpiration = new Date(Date.now() + 30 * 60 * 1000);
-  //   const verificationLink = `http://localhost:3000/auth/verify-email?t=${user.verificationToken}`;
-  //   await this.emailService.sendVerificationEmail(user.email, verificationLink);
-  // }
+
+  async handleLocalUserVerification(user: User): Promise<void> {
+    const payload = { sub: user.id, email: user.email };
+    user.verificationToken = await this.jwtService.signAsync(payload, {
+      secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
+    });
+    user.verificationTokenExpiration = new Date(Date.now() + 30 * 60 * 1000);
+    const verificationLink = `http://localhost:3000/auth/verify-email?t=${user.verificationToken}`;
+    await this.emailService.sendVerificationEmail(user.email, verificationLink);
+  }
+
   async findUser(query: Partial<User>): Promise<User> {
     return this.usersRepository.findOne({ where: query });
   }
+
   async findUserByVerificationToken(token: string): Promise<any> {
     const user = await this.usersRepository.findOne({
       where: { verificationToken: token },

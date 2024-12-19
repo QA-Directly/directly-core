@@ -25,25 +25,17 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  // async authenticate(input: AuthInputDto): Promise<LoginResponseDto> {
-  //   const user = await this.validateUser(input);
-  //   if (!user) {
-  //     throw new UnauthorizedException('Invalid credentials');
-  //   }
-  //   return this.signIn(user);
-  // }
-
   async validateUser({ email, password }: AuthInputDto): Promise<SignInDto> {
     try {
       const user = await this.usersService.findUser({ email: email });
       if (!user) {
         throw new NotFoundException('User not found');
       }
-      // if (!user.isVerified) {
-      //   throw new UnauthorizedException(
-      //     'Email not verified. Please verify email',
-      //   );
-      // }
+      if (!user.isVerified) {
+        throw new UnauthorizedException(
+          'Email not verified. Please verify email',
+        );
+      }
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         throw new UnauthorizedException('Password is incorrect');
@@ -98,11 +90,9 @@ export class AuthService {
       secure: this.configService.get('NODE_ENV') === 'production',
       expires: expiresRefreshToken,
     });
-    // const refreshToken = await this.jwtRefreshService.signAsync(tokenPayload);
-    // const refreshDecoded = this.jwtRefreshService.decode(refreshToken);
+
     return {
       id: user.userId,
-      accessToken,
       email: user.email,
     };
   }
