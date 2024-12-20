@@ -76,7 +76,6 @@ export class CreateUserDto {
     default: false,
   })
   @IsBoolean()
-  @IsOptional()
   isVerified?: boolean;
 
   @ApiPropertyOptional({
@@ -95,19 +94,19 @@ export class CreateUserDto {
   @IsOptional()
   verificationTokenExpiration?: Date;
 
-  @ApiPropertyOptional({
-    description: 'Password reset token for the user',
-    example: 'resetToken123',
-  })
-  @IsString()
-  @IsOptional()
-  resetToken?: string;
+  // @ApiPropertyOptional({
+  //   description: 'Password reset token for the user',
+  //   example: 'resetToken123',
+  // })
+  // @IsString()
+  // @IsOptional()
+  // resetToken?: string;
 
-  @ApiPropertyOptional({
-    description: 'Password reset token expiration date',
-    example: '2024-12-31T23:59:59Z',
-  })
-  @IsDateString()
-  @IsOptional()
-  resetTokenExpiration?: Date;
+  // @ApiPropertyOptional({
+  //   description: 'Password reset token expiration date',
+  //   example: '2024-12-31T23:59:59Z',
+  // })
+  // @IsDateString()
+  // @IsOptional()
+  // resetTokenExpiration?: Date;
 }

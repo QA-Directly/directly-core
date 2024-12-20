@@ -19,11 +19,10 @@ import { User } from './users/entities/user.entity';
       useFactory: (configService: ConfigService) => ({
         type: 'mongodb',
         url: configService.getOrThrow<string>('DATABASE_URL'),
-        synchronize: true,
+        synchronize: true, // DO NOT USE IN PRODUCTION
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         useUnifiedTopology: true,
         autoLoadEntities: true,
-        logging: true,
       }),
     }),
     UsersModule,

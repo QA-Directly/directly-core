@@ -65,6 +65,7 @@ export class UsersService {
       secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
     });
     user.verificationTokenExpiration = new Date(Date.now() + 30 * 60 * 1000);
+    await this.usersRepository.save(user);
     const verificationLink = `https://directly-core.onrender.com/auth/verify-email?t=${user.verificationToken}`;
     await this.emailService.sendVerificationEmail(user.email, verificationLink);
   }
