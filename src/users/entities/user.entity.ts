@@ -36,7 +36,7 @@ export class User {
   refreshTokenExpiration?: Date;
 
   @Column({ default: false })
-  isVerified: boolean;
+  isVerified?: boolean;
 
   @Column({ nullable: true })
   verificationToken?: string;
