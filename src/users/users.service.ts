@@ -17,6 +17,10 @@ export class UsersService {
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
+  async findUser(query: Partial<User>): Promise<User> {
+    return this.usersRepository.findOne({ where: query });
+  }
+
   async addProviderToUser(user: CreateUserDto) {
     if (user.googleId) {
       user.provider = 'google';
@@ -71,10 +75,6 @@ export class UsersService {
     await this.emailService.sendVerificationEmail(user.email, verificationLink);
   }
 
-  async findUser(query: Partial<User>): Promise<User> {
-    return this.usersRepository.findOne({ where: query });
-  }
-
   async findUserByVerificationToken(token: string): Promise<any> {
     const user = await this.usersRepository.findOne({
       where: { verificationToken: token },
@@ -116,6 +116,7 @@ export class UsersService {
       { resetToken: resetToken, resetTokenExpiration: resetTokenExpiration },
     );
   }
+
   async updatePassword(userId: string, newPassword: string): Promise<any> {
     await this.usersRepository.update(
       { id: userId },
@@ -123,6 +124,7 @@ export class UsersService {
     );
     return { message: 'New password saved successfully' };
   }
+
   async updateUser(id: string, data: Partial<User>): Promise<any> {
     return this.usersRepository.update({ id }, data);
   }

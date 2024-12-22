@@ -6,6 +6,7 @@ export class User {
   @ObjectIdColumn()
   id: string;
 
+  @Column({ nullable: true })
   firstName?: string;
 
   @Column({ nullable: true })
