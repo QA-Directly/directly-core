@@ -20,7 +20,7 @@ export class CreateUserDto {
     example: 'John',
   })
   @IsString()
-  firstName: string;
+  firstName?: string;
 
   @ApiPropertyOptional({
     description: 'The last name of the user',
@@ -76,6 +76,7 @@ export class CreateUserDto {
     default: false,
   })
   @IsBoolean()
+  @IsOptional()
   isVerified?: boolean;
 
   @ApiPropertyOptional({
