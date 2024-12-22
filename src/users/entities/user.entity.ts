@@ -29,12 +29,6 @@ export class User {
   @Column({ nullable: true })
   password?: string;
 
-  @Column({ nullable: true })
-  refreshToken?: string;
-
-  @Column({ nullable: true })
-  refreshTokenExpiration?: Date;
-
   @Column({ default: false })
   isVerified?: boolean;
 
@@ -43,6 +37,12 @@ export class User {
 
   @Column({ nullable: true })
   verificationTokenExpiration?: Date;
+
+  @Column({ nullable: true })
+  refreshToken?: string;
+
+  @Column({ nullable: true })
+  refreshTokenExpiration?: Date;
 
   @Column({ nullable: true })
   resetToken?: string;
