@@ -1,11 +1,11 @@
-import { Column, Entity, ObjectIdColumn, BeforeInsert } from 'typeorm';
-import * as bcrypt from 'bcrypt';
+import { Column, Entity, ObjectIdColumn } from 'typeorm';
 
 @Entity('users')
 export class User {
   @ObjectIdColumn()
   id: string;
 
+  @Column({ nullable: true })
   firstName?: string;
 
   @Column({ nullable: true })

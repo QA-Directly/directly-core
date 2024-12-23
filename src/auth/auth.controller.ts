@@ -27,13 +27,12 @@ import { Response } from 'express';
 import { VerifyEmailDto } from 'src/users/dto/verify-email.dto';
 import { ForgotPasswordDto } from 'src/users/dto/forgot-password.dto';
 import { ResetPasswordQueryDto } from 'src/users/dto/reset-password-query.dto';
-import { ResetPasswordBodyDto } from 'src/users/dto/reser-password-body.dto';
+import { ResetPasswordBodyDto } from 'src/users/dto/reset-password-body.dto';
 import { LoginResponseDto } from 'src/users/dto/login-response.dto';
 import { AuthRequest, SocialRequest } from './auth.types';
 import { SignInDto } from 'src/users/dto/signin-request.dto';
 import { CreateUserDto } from 'src/users/dto/create-user';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
-3;
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh.guards';
 
 @ApiTags('auth')
