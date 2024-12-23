@@ -229,13 +229,6 @@ export class AuthService {
       email: user.email,
     };
   }
-  async authenticateFacebook(profile: FacebookData): Promise<LoginResponseDto> {
-    const user = await this.validateFacebookUser(profile);
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-    return await this.googleSignIn(user);
-  }
   async validateFacebookUser(profile: FacebookData): Promise<any> {
     const user = await this.usersService.findUser({ email: profile.email });
     if (user) {
