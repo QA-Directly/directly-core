@@ -193,7 +193,10 @@ export class AuthService {
       sub: user.id,
       email: user.email,
     };
-    const accessToken = await this.jwtService.signAsync(tokenPayload);
+    const accessToken = await this.jwtService.signAsync(tokenPayload, {
+      secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
+      expiresIn: `${this.configService.getOrThrow<string>('JWT_ACCESS_EXPIRES_IN')}m`,
+    });
     return {
       id: user.id,
       email: user.email,
@@ -227,7 +230,10 @@ export class AuthService {
       sub: user.id,
       email: user.email,
     };
-    const accessToken = await this.jwtService.signAsync(tokenPayload);
+    const accessToken = await this.jwtService.signAsync(tokenPayload, {
+      secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
+      expiresIn: `${this.configService.getOrThrow<string>('JWT_ACCESS_EXPIRES_IN')}m`,
+    });
     return {
       id: user.id,
       email: user.email,
