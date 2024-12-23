@@ -186,8 +186,11 @@ export class AuthController {
       'Unauthorized if the callback request is invalid or the user is not authenticated.',
   })
   @UseGuards(PassportGoogleGuard)
-  async googleCallback(@Request() req: SocialRequest) {
-    return this.authService.googleSignIn(req.user);
+  async googleCallback(
+    @CurrentUser() user: SocialRequest['user'],
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return this.authService.googleSignIn(user, response);
   }
 
   @Get('facebook')

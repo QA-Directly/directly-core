@@ -163,14 +163,6 @@ export class AuthService {
     return { message: 'Password reset successfully' };
   }
 
-  async authenticateGoogle(profile: GoogleData): Promise<LoginResponseDto> {
-    const user = await this.validateGoogleUser(profile);
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-    return await this.googleSignIn(user);
-  }
-
   async validateGoogleUser(profile: GoogleData): Promise<User> {
     const user = await this.usersService.findUser({ email: profile.email });
     if (user) {
@@ -188,27 +180,54 @@ export class AuthService {
     return newUser;
   }
 
-  async googleSignIn(user: User): Promise<LoginResponseDto> {
+  async googleSignIn(
+    user: User,
+    response: Response,
+  ): Promise<LoginResponseDto> {
     const tokenPayload = {
       sub: user.id,
       email: user.email,
     };
+    const expiresAccessToken = new Date();
+    expiresAccessToken.setMinutes(
+      expiresAccessToken.getMinutes() +
+        parseInt(
+          this.configService.getOrThrow<string>('JWT_ACCESS_EXPIRES_IN'),
+        ),
+    );
+    const expiresRefreshToken = new Date();
+    expiresRefreshToken.setMinutes(
+      expiresRefreshToken.getMinutes() +
+        parseInt(
+          this.configService.getOrThrow<string>('REFRESH_TOKEN_EXPIRES_IN'),
+        ),
+    );
     const accessToken = await this.jwtService.signAsync(tokenPayload, {
       secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
       expiresIn: `${this.configService.getOrThrow<string>('JWT_ACCESS_EXPIRES_IN')}m`,
     });
+    const refreshToken = await this.jwtService.signAsync(tokenPayload, {
+      secret: this.configService.getOrThrow<string>('REFRESH_TOKEN_SECRET'),
+      expiresIn: `${this.configService.getOrThrow<string>('REFRESH_TOKEN_EXPIRES_IN')}m`,
+    });
+    await this.usersService.updateUser(user.id, {
+      refreshToken: await bcrypt.hash(refreshToken, 10),
+      refreshTokenExpiration: expiresRefreshToken,
+    });
+    response.cookie('Authentication', accessToken, {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      expires: expiresAccessToken,
+    });
+    response.cookie('Refresh', refreshToken, {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      expires: expiresRefreshToken,
+    });
     return {
       id: user.id,
       email: user.email,
-      accessToken,
     };
-  }
-  async authenticateFacebook(profile: FacebookData): Promise<LoginResponseDto> {
-    const user = await this.validateFacebookUser(profile);
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-    return await this.googleSignIn(user);
   }
   async validateFacebookUser(profile: FacebookData): Promise<any> {
     const user = await this.usersService.findUser({ email: profile.email });
