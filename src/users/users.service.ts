@@ -60,14 +60,15 @@ export class UsersService {
       password: await bcrypt.hash(data.password, 10),
     });
     await this.usersRepository.save(user);
-    await this.handleLocalUserVerification(user);
+    await this.sendVerificationEmail(user);
     return user;
   }
 
-  async handleLocalUserVerification(user: User): Promise<void> {
+  async sendVerificationEmail(user: User): Promise<void> {
     const payload = { sub: user.id, email: user.email };
     user.verificationToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
+      expiresIn: '30m',
     });
     user.verificationTokenExpiration = new Date(Date.now() + 30 * 60 * 1000);
     await this.usersRepository.save(user);

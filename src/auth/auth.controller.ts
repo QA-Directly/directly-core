@@ -102,6 +102,11 @@ export class AuthController {
     return res.redirect('https://directly-app.netlify.app/auth/verify-email');
   }
 
+  @Post('resend-verification')
+  async resendVerification(@CurrentUser() user: SignInDto): Promise<void> {
+    return this.authService.resendVerificationEmail(user);
+  }
+
   @Post('forgot-password')
   @ApiOperation({
     summary: 'Request a password reset',

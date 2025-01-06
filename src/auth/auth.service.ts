@@ -168,6 +168,17 @@ export class AuthService {
     return { message: 'Email verified successfully' };
   }
 
+  async resendVerificationEmail(user: User): Promise<any> {
+    const foundUser = await this.usersService.findUser({ email: user.email });
+    if (!foundUser) {
+      throw new UnauthorizedException('No user found for email: ' + user.email);
+    }
+    if (foundUser.isVerified) {
+      throw new UnauthorizedException('Email already verified');
+    }
+    return this.usersService.sendVerificationEmail(foundUser);
+  }
+
   async forgotPassword(email: string): Promise<void> {
     const foundUser = await this.usersService.findUser({ email: email });
     if (!foundUser) {
