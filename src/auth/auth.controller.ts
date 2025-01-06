@@ -186,13 +186,8 @@ export class AuthController {
       'Unauthorized if the callback request is invalid or the user is not authenticated.',
   })
   @UseGuards(PassportGoogleGuard)
-  async googleCallback(
-    @CurrentUser() user: SocialRequest['user'],
-    @Res({ passthrough: true }) response: Response,
-  ) {
-    return this.authService.googleSignIn(user, response);
-  }
 
+  //https://directly-app.netlify.app/dashboard
   @Get('facebook')
   @ApiBearerAuth()
   @ApiOperation({

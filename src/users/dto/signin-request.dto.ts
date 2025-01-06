@@ -14,5 +14,5 @@ export class SignInDto {
     example: 1234567890,
   })
   @IsString()
-  userId: string;
+  id: string;
 }

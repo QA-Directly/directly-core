@@ -13,7 +13,7 @@ import { EmailService } from 'src/email/email.service';
 import { LoginResponseDto } from 'src/users/dto/login-response.dto';
 import { SignInDto } from 'src/users/dto/signin-request.dto';
 import { AuthInputDto } from 'src/users/dto/auth-input.dto';
-import { Response } from 'express';
+import { response, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -24,6 +24,72 @@ export class AuthService {
     private emailService: EmailService,
     private configService: ConfigService,
   ) {}
+
+  private async generateLoginTokens(user: SignInDto): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    expiresAccessToken: Date;
+    expiresRefreshToken: Date;
+  }> {
+    const tokenPayload = {
+      sub: user.id,
+      email: user.email,
+    };
+
+    const expiresAccessToken = new Date();
+    expiresAccessToken.setMinutes(
+      expiresAccessToken.getMinutes() +
+        parseInt(
+          this.configService.getOrThrow<string>('JWT_ACCESS_EXPIRES_IN'),
+        ),
+    );
+
+    const expiresRefreshToken = new Date();
+    expiresRefreshToken.setMinutes(
+      expiresRefreshToken.getMinutes() +
+        parseInt(
+          this.configService.getOrThrow<string>('REFRESH_TOKEN_EXPIRES_IN'),
+        ),
+    );
+
+    const accessToken = await this.jwtService.signAsync(tokenPayload, {
+      secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
+      expiresIn: `${this.configService.getOrThrow<string>('JWT_ACCESS_EXPIRES_IN')}m`,
+    });
+
+    const refreshToken = await this.jwtService.signAsync(tokenPayload, {
+      secret: this.configService.getOrThrow<string>('REFRESH_TOKEN_SECRET'),
+      expiresIn: `${this.configService.getOrThrow<string>('REFRESH_TOKEN_EXPIRES_IN')}m`,
+    });
+    return {
+      accessToken,
+      refreshToken,
+      expiresAccessToken,
+      expiresRefreshToken,
+    };
+  }
+
+  private setAuthCookies(
+    response: Response,
+    tokens: {
+      accessToken: string;
+      refreshToken: string;
+      expiresAccessToken: Date;
+      expiresRefreshToken: Date;
+    },
+  ): void {
+    response.cookie('Authentication', tokens.accessToken, {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      expires: tokens.expiresAccessToken,
+    });
+
+    response.cookie('Refresh', tokens.refreshToken, {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      expires: tokens.expiresRefreshToken,
+    });
+  }
 
   async validateUser({ email, password }: AuthInputDto): Promise<SignInDto> {
     try {
@@ -41,7 +107,7 @@ export class AuthService {
         throw new UnauthorizedException('Password is incorrect');
       }
       return {
-        userId: user.id,
+        id: user.id,
         email: user.email,
       };
     } catch (error) {
@@ -50,52 +116,31 @@ export class AuthService {
   }
 
   async signIn(user: SignInDto, response: Response): Promise<LoginResponseDto> {
-    const expiresAccessToken = new Date();
-    expiresAccessToken.setMinutes(
-      expiresAccessToken.getMinutes() +
-        parseInt(
-          this.configService.getOrThrow<string>('JWT_ACCESS_EXPIRES_IN'),
-        ),
-    );
-    const expiresRefreshToken = new Date();
-    expiresRefreshToken.setMinutes(
-      expiresRefreshToken.getMinutes() +
-        parseInt(
-          this.configService.getOrThrow<string>('REFRESH_TOKEN_EXPIRES_IN'),
-        ),
-    );
-    const tokenPayload = {
-      sub: user.userId,
-      email: user.email,
-    };
-    const accessToken = await this.jwtService.signAsync(tokenPayload, {
-      secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
-      expiresIn: `${this.configService.getOrThrow<string>('JWT_ACCESS_EXPIRES_IN')}m`,
-    });
-    const refreshToken = await this.jwtService.signAsync(tokenPayload, {
-      secret: this.configService.getOrThrow<string>('REFRESH_TOKEN_SECRET'),
-      expiresIn: `${this.configService.getOrThrow<string>('REFRESH_TOKEN_EXPIRES_IN')}m`,
-    });
-    await this.usersService.updateUser(user.userId, {
+    const loginTokens = await this.generateLoginTokens(user);
+    const {
+      accessToken,
+      refreshToken,
+      expiresAccessToken,
+      expiresRefreshToken,
+    } = loginTokens;
+
+    await this.usersService.updateUser(user.id, {
       refreshToken: await bcrypt.hash(refreshToken, 10),
       refreshTokenExpiration: expiresRefreshToken,
     });
-    response.cookie('Authentication', accessToken, {
-      httpOnly: true,
-      secure: this.configService.get('NODE_ENV') === 'production',
-      expires: expiresAccessToken,
-    });
-    response.cookie('Refresh', refreshToken, {
-      httpOnly: true,
-      secure: this.configService.get('NODE_ENV') === 'production',
-      expires: expiresRefreshToken,
+    this.setAuthCookies(response, {
+      accessToken,
+      refreshToken,
+      expiresAccessToken,
+      expiresRefreshToken,
     });
 
     return {
-      id: user.userId,
+      id: user.id,
       email: user.email,
     };
   }
+
   async verifyRefreshToken(refreshToken: string, userId: string) {
     try {
       const user = await this.usersService.findUser({ id: userId });
@@ -184,51 +229,30 @@ export class AuthService {
     user: User,
     response: Response,
   ): Promise<LoginResponseDto> {
-    const tokenPayload = {
-      sub: user.id,
-      email: user.email,
-    };
-    const expiresAccessToken = new Date();
-    expiresAccessToken.setMinutes(
-      expiresAccessToken.getMinutes() +
-        parseInt(
-          this.configService.getOrThrow<string>('JWT_ACCESS_EXPIRES_IN'),
-        ),
-    );
-    const expiresRefreshToken = new Date();
-    expiresRefreshToken.setMinutes(
-      expiresRefreshToken.getMinutes() +
-        parseInt(
-          this.configService.getOrThrow<string>('REFRESH_TOKEN_EXPIRES_IN'),
-        ),
-    );
-    const accessToken = await this.jwtService.signAsync(tokenPayload, {
-      secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
-      expiresIn: `${this.configService.getOrThrow<string>('JWT_ACCESS_EXPIRES_IN')}m`,
-    });
-    const refreshToken = await this.jwtService.signAsync(tokenPayload, {
-      secret: this.configService.getOrThrow<string>('REFRESH_TOKEN_SECRET'),
-      expiresIn: `${this.configService.getOrThrow<string>('REFRESH_TOKEN_EXPIRES_IN')}m`,
-    });
+    const loginTokens = await this.generateLoginTokens(user);
+    const {
+      accessToken,
+      refreshToken,
+      expiresAccessToken,
+      expiresRefreshToken,
+    } = loginTokens;
     await this.usersService.updateUser(user.id, {
       refreshToken: await bcrypt.hash(refreshToken, 10),
       refreshTokenExpiration: expiresRefreshToken,
     });
-    response.cookie('Authentication', accessToken, {
-      httpOnly: true,
-      secure: this.configService.get('NODE_ENV') === 'production',
-      expires: expiresAccessToken,
+    this.setAuthCookies(response, {
+      accessToken,
+      refreshToken,
+      expiresAccessToken,
+      expiresRefreshToken,
     });
-    response.cookie('Refresh', refreshToken, {
-      httpOnly: true,
-      secure: this.configService.get('NODE_ENV') === 'production',
-      expires: expiresRefreshToken,
-    });
+    response.redirect('https://frontend-app.com/dashboard');
     return {
       id: user.id,
       email: user.email,
     };
   }
+
   async validateFacebookUser(profile: FacebookData): Promise<any> {
     const user = await this.usersService.findUser({ email: profile.email });
     if (user) {
@@ -244,19 +268,23 @@ export class AuthService {
     });
     return newUser;
   }
+
   async facebookSignIn(user: User): Promise<LoginResponseDto> {
-    const tokenPayload = {
-      sub: user.id,
-      email: user.email,
-    };
-    const accessToken = await this.jwtService.signAsync(tokenPayload, {
-      secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
-      expiresIn: `${this.configService.getOrThrow<string>('JWT_ACCESS_EXPIRES_IN')}m`,
+    const loginTokens = await this.generateLoginTokens(user);
+    const {
+      accessToken,
+      refreshToken,
+      expiresAccessToken,
+      expiresRefreshToken,
+    } = loginTokens;
+    await this.usersService.updateUser(user.id, {
+      refreshToken: await bcrypt.hash(refreshToken, 10),
+      refreshTokenExpiration: expiresRefreshToken,
     });
+    response.redirect('https://frontend-app.com/dashboard');
     return {
       id: user.id,
       email: user.email,
-      accessToken,
     };
   }
   async getProfile(id: string): Promise<User> {
