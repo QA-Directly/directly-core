@@ -26,6 +26,7 @@ export class EmailService {
     };
     return this.sendMail(mailOptions);
   }
+
   async sendPasswordResetEmail(email: string, resetLink: string) {
     const mailOptions = {
       to: email,

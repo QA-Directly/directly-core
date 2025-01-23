@@ -64,7 +64,7 @@ export class UsersService {
     return user;
   }
 
-  async sendVerificationEmail(user: User): Promise<void> {
+  async sendVerificationEmail(user: User): Promise<{ message: string }> {
     const payload = { sub: user.id, email: user.email };
     user.verificationToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
@@ -74,6 +74,7 @@ export class UsersService {
     await this.usersRepository.save(user);
     const verificationLink = `https://directly-core.onrender.com/auth/verify-email?t=${user.verificationToken}`;
     await this.emailService.sendVerificationEmail(user.email, verificationLink);
+    return { message: `Verification email sent to ${user.email}` };
   }
 
   async findUserByVerificationToken(token: string): Promise<any> {
