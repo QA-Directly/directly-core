@@ -168,10 +168,10 @@ export class AuthService {
     return { message: 'Email verified successfully' };
   }
 
-  async resendVerificationEmail(user: User): Promise<any> {
-    const foundUser = await this.usersService.findUser({ email: user.email });
+  async resendVerificationEmail(email: string): Promise<any> {
+    const foundUser = await this.usersService.findUser({ email });
     if (!foundUser) {
-      throw new UnauthorizedException('No user found for email: ' + user.email);
+      throw new UnauthorizedException('No user found for email: ' + email);
     }
     if (foundUser.isVerified) {
       throw new UnauthorizedException('Email already verified');
