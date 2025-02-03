@@ -7,18 +7,30 @@ import {
   Param,
   Delete,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  Request,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user';
 import { User } from './entities/user.entity';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guards';
+import { VendorService } from 'src/vendor/vendor.service';
+import { CreateVendorDto } from 'src/vendor/dto/create-vendor.dto';
+import { SignInDto } from './dto/signin-request.dto';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly vendorService: VendorService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new user' })
@@ -39,8 +51,33 @@ export class UsersController {
     type: [User],
   })
   async getUsers(@CurrentUser() user: User) {
-    console.log(user);
     return this.usersService.findAll();
+  }
+
+  @Post('apply-for-vendor')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileInterceptor('idImage', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
+  applyForVendor(
+    @CurrentUser() user: User,
+    @Body() vendorDto: CreateVendorDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.vendorService.applyForVendor(
+      user.email,
+      vendorDto,
+      file?.filename,
+    );
   }
 
   @Patch(':id')

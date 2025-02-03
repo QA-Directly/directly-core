@@ -1,4 +1,6 @@
-import { Column, Entity, ObjectIdColumn } from 'typeorm';
+import { Column, Entity, ObjectIdColumn, OneToOne } from 'typeorm';
+import { Vendor } from '../../vendor/entities/vendor.entity';
+import { IsIn } from 'class-validator';
 
 @Entity('users')
 export class User {
@@ -28,6 +30,14 @@ export class User {
 
   @Column({ nullable: true })
   password?: string;
+
+  @Column({ default: 'regular' })
+  @IsIn(['regular', 'vendor'])
+  role?: string;
+
+  @Column({ nullable: true })
+  @OneToOne(() => Vendor, (vendor) => vendor.user)
+  vendorDetails?: Vendor;
 
   @Column({ default: false })
   isVerified?: boolean;
