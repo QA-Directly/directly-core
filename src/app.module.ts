@@ -6,6 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { User } from './users/entities/user.entity';
+import { VendorModule } from './vendor/vendor.module';
+import { Vendor } from './vendor/entities/vendor.entity';
 
 @Module({
   imports: [
@@ -19,14 +21,15 @@ import { User } from './users/entities/user.entity';
       useFactory: (configService: ConfigService) => ({
         type: 'mongodb',
         url: configService.getOrThrow<string>('DATABASE_URL'),
-        synchronize: true, // DO NOT USE IN PRODUCTION
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: false,
+        entities: [User, Vendor],
         useUnifiedTopology: true,
         autoLoadEntities: true,
       }),
     }),
     UsersModule,
     AuthModule,
+    VendorModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,4 +1,9 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -17,8 +22,21 @@ export class UsersService {
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
-  async findUser(query: Partial<User>): Promise<User> {
-    return this.usersRepository.findOne({ where: query });
+
+  // async findUserById(id: string): Promise<User> {
+  //   const user = await this.usersRepository.findOne({ where: { id } });
+  //   if (!user) {
+  //     throw new NotFoundException('User not found');
+  //   }
+  //   return user;
+  // }
+
+  async findUserByEmail(email: string): Promise<User> {
+    const user = await this.usersRepository.findOne({ where: { email } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   async addProviderToUser(user: CreateUserDto) {
@@ -31,12 +49,16 @@ export class UsersService {
     }
     return user;
   }
+
   async create(user: CreateUserDto): Promise<User> {
     try {
-      const existingUser = await this.findUser({ email: user.email });
+      const existingUser = await this.usersRepository.findOne({
+        where: { email: user.email },
+      });
       if (existingUser) {
         throw new InternalServerErrorException('User already exists');
       }
+      user.role = 'regular';
       const data = await this.addProviderToUser(user);
       if (user.provider === 'local') {
         return this.createLocalUser(data);
@@ -86,6 +108,7 @@ export class UsersService {
     }
     return user;
   }
+
   async verifyEmail(token: string): Promise<any> {
     const user = await this.findUserByVerificationToken(token);
     if (!user) {

@@ -19,10 +19,10 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { PassportLocalGuard } from './guards/local.guards';
-import { JwtAuthGuard } from './guards/jwt.guards';
-import { PassportGoogleGuard } from './guards/passport-google.guards';
-import { PassportFacebookGuard } from './guards/passport-facebook.guards';
+import { PassportLocalGuard } from './guards/local.guard';
+import { JwtAuthGuard } from './guards/jwt.guard';
+import { PassportGoogleGuard } from './guards/passport-google.guard';
+import { PassportFacebookGuard } from './guards/passport-facebook.guard';
 import { Response } from 'express';
 import { VerifyEmailDto } from 'src/users/dto/verify-email.dto';
 import { ForgotPasswordDto } from 'src/users/dto/forgot-password.dto';
@@ -33,7 +33,7 @@ import { AuthRequest, SocialRequest } from './auth.types';
 import { SignInDto } from 'src/users/dto/signin-request.dto';
 import { CreateUserDto } from 'src/users/dto/create-user';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
-import { JwtRefreshAuthGuard } from './guards/jwt-refresh.guards';
+import { JwtRefreshAuthGuard } from './guards/jwt-refresh.guard';
 
 @ApiTags('auth')
 @Controller('auth')

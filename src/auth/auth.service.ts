@@ -93,7 +93,7 @@ export class AuthService {
 
   async validateUser({ email, password }: AuthInputDto): Promise<SignInDto> {
     try {
-      const user = await this.usersService.findUser({ email: email });
+      const user = await this.usersService.findUserByEmail(email);
       if (!user) {
         throw new NotFoundException('User not found');
       }
@@ -141,9 +141,9 @@ export class AuthService {
     };
   }
 
-  async verifyRefreshToken(refreshToken: string, userId: string) {
+  async verifyRefreshToken(refreshToken: string, email: string): Promise<User> {
     try {
-      const user = await this.usersService.findUser({ id: userId });
+      const user = await this.usersService.findUserByEmail(email);
       const authenticated = await bcrypt.compare(
         refreshToken,
         user.refreshToken,
@@ -169,7 +169,7 @@ export class AuthService {
   }
 
   async resendVerificationEmail(email: string): Promise<any> {
-    const foundUser = await this.usersService.findUser({ email });
+    const foundUser = await this.usersService.findUserByEmail(email);
     if (!foundUser) {
       throw new UnauthorizedException('No user found for email: ' + email);
     }
@@ -180,7 +180,7 @@ export class AuthService {
   }
 
   async forgotPassword(email: string): Promise<void> {
-    const foundUser = await this.usersService.findUser({ email: email });
+    const foundUser = await this.usersService.findUserByEmail(email);
     if (!foundUser) {
       throw new UnauthorizedException('No user found for email: ' + email);
     }
@@ -220,7 +220,7 @@ export class AuthService {
   }
 
   async validateGoogleUser(profile: GoogleData): Promise<User> {
-    const user = await this.usersService.findUser({ email: profile.email });
+    const user = await this.usersService.findUserByEmail(profile.email);
     if (user) {
       return user;
     }
@@ -265,7 +265,7 @@ export class AuthService {
   }
 
   async validateFacebookUser(profile: FacebookData): Promise<any> {
-    const user = await this.usersService.findUser({ email: profile.email });
+    const user = await this.usersService.findUserByEmail(profile.email);
     if (user) {
       return user;
     }
@@ -298,7 +298,7 @@ export class AuthService {
       email: user.email,
     };
   }
-  async getProfile(id: string): Promise<User> {
-    return this.usersService.findUser({ id });
+  async getProfile(email: string): Promise<User> {
+    return this.usersService.findUserByEmail(email);
   }
 }

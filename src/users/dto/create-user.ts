@@ -95,6 +95,14 @@ export class CreateUserDto {
   @IsOptional()
   verificationTokenExpiration?: Date;
 
+  @ApiPropertyOptional({
+    description: 'The role of the user',
+    example: 'regular',
+  })
+  @IsString()
+  @IsOptional()
+  role?: string;
+
   // @ApiPropertyOptional({
   //   description: 'Password reset token for the user',
   //   example: 'resetToken123',
