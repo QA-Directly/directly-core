@@ -19,7 +19,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user';
 import { User } from './entities/user.entity';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
-import { JwtAuthGuard } from 'src/auth/guards/jwt.guards';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { VendorService } from 'src/vendor/vendor.service';
 import { CreateVendorDto } from 'src/vendor/dto/create-vendor.dto';
 import { SignInDto } from './dto/signin-request.dto';
@@ -68,16 +68,16 @@ export class UsersController {
       }),
     }),
   )
-  applyForVendor(
+  async applyForVendor(
     @CurrentUser() user: User,
     @Body() vendorDto: CreateVendorDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.vendorService.applyForVendor(
-      user.email,
-      vendorDto,
-      file?.filename,
-    );
+    if (file) {
+      vendorDto.idImage = file.filename;
+    }
+    const vendor = await this.vendorService.createVendor(user.email, vendorDto);
+    return { message: 'Vendor application submitted', vendor };
   }
 
   @Patch(':id')
