@@ -1,6 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { VendorService } from './vendor.service';
-import { CreateVendorDto } from './dto/create-vendor.dto';
+import { VendorGuard } from './guards/vendor.guard';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 
 @Controller('vendor')
@@ -8,8 +17,10 @@ export class VendorController {
   constructor(private readonly vendorService: VendorService) {}
 
   @Post()
-  create(@Body() createVendorDto: CreateVendorDto) {
-    return this.vendorService.create(createVendorDto);
+  @UseGuards(VendorGuard)
+  @Post('create-service')
+  createService() {
+    return 'Service created by a vendor!';
   }
 
   @Get()

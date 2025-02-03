@@ -3,7 +3,7 @@ import { CreateVendorDto } from './dto/create-vendor.dto';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Vendor } from './entities/vendor.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
@@ -13,15 +13,14 @@ export class VendorService {
   constructor(
     @InjectRepository(Vendor)
     private vendorRepository: Repository<Vendor>,
-    private readonly usersService: UsersService,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private readonly usersService: UsersService,
   ) {}
 
-  async applyForVendor(
+  async createVendor(
     email: string,
     vendorDto: CreateVendorDto,
-    idImage?: string,
   ): Promise<Vendor> {
     const user = await this.usersService.findUserByEmail(email);
     if (!user) throw new NotFoundException('User not found');
@@ -36,19 +35,34 @@ export class VendorService {
 
     const vendor = this.vendorRepository.create({
       user,
-      businessName: vendorDto.businessName,
-      address: vendorDto.address,
-      city: vendorDto.city,
-      state: vendorDto.state,
-      country: vendorDto.country,
-      phoneNumber: vendorDto.phoneNumber,
-      email: vendorDto.email,
-      category: vendorDto.category,
-      description: vendorDto.description,
-      idImage: vendorDto.idImage,
-      status: 'pending',
+      ...vendorDto,
     });
 
+    await this.vendorRepository.save(vendor);
+    return vendor;
+  }
+
+  async approveVendor(userId: string): Promise<Vendor> {
+    const vendor = await this.vendorRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
+    if (!vendor) throw new NotFoundException('Vendor application not found');
+
+    vendor.status = 'approved';
+    vendor.user.role = 'vendor';
+    await this.userRepository.save(vendor.user);
+
+    return this.vendorRepository.save(vendor);
+  }
+
+  async rejectVendor(userId: string): Promise<Vendor> {
+    const vendor = await this.vendorRepository.findOne({
+      where: { user: { id: userId } },
+    });
+    if (!vendor) throw new NotFoundException('Vendor application not found');
+
+    vendor.status = 'rejected';
     return this.vendorRepository.save(vendor);
   }
 
