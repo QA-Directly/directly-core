@@ -8,7 +8,6 @@ Welcome to the **Directly Backend**, the powerful API that powers Directly – a
 - **Database:** PostgreSQL + TypeORM 🐘
 - **Authentication:** JWT 🔑
 - **API Documentation:** Swagger 📜
-- **Environment Management:** dotenv 🌍
 
 ## 🚀 Getting Started
 
@@ -16,7 +15,7 @@ Welcome to the **Directly Backend**, the powerful API that powers Directly – a
 Make sure you have the following installed:
 - **Node.js** (v16+)
 - **PostgreSQL**
-- **Yarn** or **npm**
+-  **npm**
 
 ### Installation
 ```sh
@@ -34,13 +33,13 @@ cp .env.example .env
 ### Running the App
 ```sh
 # Start the backend (NestJS)
-npm run start:dev  # or yarn start:dev
+npm run start:dev  
 ```
 
 ### Database Migrations
 ```sh
 # Run migrations
-npm run migration:run  # or yarn migration:run
+npm run migration:run  
 ```
 
 ### API Documentation
