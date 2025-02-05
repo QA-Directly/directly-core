@@ -1,8 +1,8 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { VendorService } from './vendor.service';
-import { VendorController } from './vendor.controller';
+import { VendorService } from './service.service';
+import { VendorController } from './service.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Vendor } from './entities/vendor.entity';
+import { Vendor } from './entities/service.entity';
 import { User } from '../users/entities/user.entity';
 import { UsersModule } from 'src/users/users.module';
 

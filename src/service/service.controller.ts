@@ -8,8 +8,8 @@ import {
   Delete,
   UseGuards,
 } from '@nestjs/common';
-import { VendorService } from './vendor.service';
-import { VendorGuard } from './guards/vendor.guard';
+import { VendorService } from './service.service';
+import { VendorGuard } from './guards/service.guard';
 import { UpdateVendorDto } from './dto/update-vendor.dto';
 
 @Controller('vendor')
