@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { User } from './users/entities/user.entity';
+import { BookingModule } from './booking/booking.module';
 import { VendorModule } from './service/service.module';
 import { Vendor } from './service/entities/service.entity';
 
@@ -30,6 +31,7 @@ import { Vendor } from './service/entities/service.entity';
     UsersModule,
     AuthModule,
     VendorModule,
+    BookingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

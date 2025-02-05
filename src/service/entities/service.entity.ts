@@ -1,8 +1,16 @@
-import { Entity, Column, OneToOne, JoinColumn, ObjectIdColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  OneToOne,
+  JoinColumn,
+  ObjectIdColumn,
+  ManyToOne,
+} from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { Booking } from 'src/booking/entities/booking.entity';
 
-@Entity('vendor')
-export class Vendor {
+@Entity('services')
+export class Service {
   @ObjectIdColumn()
   id: string;
 
@@ -36,9 +44,13 @@ export class Vendor {
   @Column()
   idImage: string;
 
-  @OneToOne(() => User, (user) => user.vendorDetails)
+  @OneToOne(() => User, (user) => user.serviceDetails)
   @JoinColumn()
   user: User;
+
+  @ManyToOne(() => Booking, (booking) => booking.service, { eager: true })
+  @JoinColumn()
+  bookings: Booking[];
 
   @Column({ default: 'pending' })
   status: 'pending' | 'approved' | 'rejected';
