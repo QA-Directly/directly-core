@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { User } from './users/entities/user.entity';
 import { VendorModule } from './vendor/vendor.module';
 import { Vendor } from './vendor/entities/vendor.entity';
+import { BookingModule } from './booking/booking.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { Vendor } from './vendor/entities/vendor.entity';
     UsersModule,
     AuthModule,
     VendorModule,
+    BookingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
