@@ -20,11 +20,11 @@ Make sure you have the following installed:
 ### Installation
 ```sh
 # Clone the repository
-git clone https://github.com/your-org/directly-backend.git
+git clone https://github.com/QA-Directly/directly-core.git
 cd directly-backend
 
 # Install dependencies
-npm install  # or yarn install
+npm install  
 
 # Set up environment variables
 cp .env.example .env
