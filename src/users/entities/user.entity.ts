@@ -1,6 +1,7 @@
 import { Column, Entity, ObjectIdColumn, OneToOne } from 'typeorm';
-import { Vendor } from '../../vendor/entities/vendor.entity';
+import { Service } from '../../service/entities/service.entity';
 import { IsIn } from 'class-validator';
+import { Booking } from 'src/booking/entities/booking.entity';
 
 @Entity('users')
 export class User {
@@ -36,11 +37,14 @@ export class User {
   role?: string;
 
   @Column({ nullable: true })
-  @OneToOne(() => Vendor, (vendor) => vendor.user)
-  vendorDetails?: Vendor;
+  @OneToOne(() => Service, (service) => service.user)
+  serviceDetails?: Service;
 
   @Column({ default: false })
   isVerified?: boolean;
+
+  @Column()
+  bookings?: Booking[];
 
   @Column({ nullable: true })
   verificationToken?: string;
