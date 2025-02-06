@@ -8,13 +8,13 @@ import {
   Delete,
   UseGuards,
 } from '@nestjs/common';
-import { VendorService } from './service.service';
+import { ServiceService } from './service.service';
 import { VendorGuard } from './guards/service.guard';
-import { UpdateVendorDto } from './dto/update-vendor.dto';
+import { UpdateServiceDto } from './dto/update-service.dto';
 
-@Controller('vendor')
-export class VendorController {
-  constructor(private readonly vendorService: VendorService) {}
+@Controller('service')
+export class ServiceController {
+  constructor(private readonly serviceService: ServiceService) {}
 
   @Post()
   @UseGuards(VendorGuard)
@@ -25,21 +25,21 @@ export class VendorController {
 
   @Get()
   findAll() {
-    return this.vendorService.findAll();
+    return this.serviceService.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.vendorService.findOne(+id);
+    return this.serviceService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateVendorDto: UpdateVendorDto) {
-    return this.vendorService.update(+id, updateVendorDto);
+  update(@Param('id') id: string, @Body() updateVendorDto: UpdateServiceDto) {
+    return this.serviceService.update(+id, updateVendorDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.vendorService.remove(+id);
+    return this.serviceService.remove(+id);
   }
 }

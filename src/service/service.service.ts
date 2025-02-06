@@ -1,48 +1,48 @@
 import { Injectable } from '@nestjs/common';
-import { CreateVendorDto } from './dto/create-vendor.dto';
-import { UpdateVendorDto } from './dto/update-vendor.dto';
+import { CreateServiceDto } from './dto/create-service.dto';
+import { UpdateServiceDto } from './dto/update-service.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Vendor } from './entities/service.entity';
-import { In, Repository } from 'typeorm';
+import { Service } from './entities/service.entity';
+import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 @Injectable()
-export class VendorService {
+export class ServiceService {
   constructor(
-    @InjectRepository(Vendor)
-    private vendorRepository: Repository<Vendor>,
+    @InjectRepository(Service)
+    private vendorRepository: Repository<Service>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private readonly usersService: UsersService,
   ) {}
 
-  async createVendor(
+  async createService(
     email: string,
-    vendorDto: CreateVendorDto,
-  ): Promise<Vendor> {
+    serviceDto: CreateServiceDto,
+  ): Promise<Service> {
     const user = await this.usersService.findUserByEmail(email);
     if (!user) throw new NotFoundException('User not found');
 
-    const existingVendor = await this.vendorRepository.findOne({
+    const existingService = await this.vendorRepository.findOne({
       where: { user: { email } },
     });
-    if (existingVendor)
+    if (existingService)
       throw new BadRequestException(
         'You are already a vendor or have a pending application',
       );
 
-    const vendor = this.vendorRepository.create({
+    const createdService = this.vendorRepository.create({
       user,
-      ...vendorDto,
+      ...serviceDto,
     });
 
-    await this.vendorRepository.save(vendor);
-    return vendor;
+    const service = await this.vendorRepository.save(createdService);
+    return service;
   }
 
-  async approveVendor(userId: string): Promise<Vendor> {
+  async approveVendor(userId: string): Promise<Service> {
     const vendor = await this.vendorRepository.findOne({
       where: { user: { id: userId } },
       relations: ['user'],
@@ -56,7 +56,7 @@ export class VendorService {
     return this.vendorRepository.save(vendor);
   }
 
-  async rejectVendor(userId: string): Promise<Vendor> {
+  async rejectVendor(userId: string): Promise<Service> {
     const vendor = await this.vendorRepository.findOne({
       where: { user: { id: userId } },
     });
@@ -66,7 +66,7 @@ export class VendorService {
     return this.vendorRepository.save(vendor);
   }
 
-  create(createVendorDto: CreateVendorDto) {
+  create(createVendorDto: CreateServiceDto) {
     return 'This action adds a new vendor';
   }
 
@@ -78,7 +78,7 @@ export class VendorService {
     return `This action returns a #${id} vendor`;
   }
 
-  update(id: number, updateVendorDto: UpdateVendorDto) {
+  update(id: number, updateVendorDto: UpdateServiceDto) {
     return `This action updates a #${id} vendor`;
   }
 

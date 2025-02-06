@@ -1,4 +1,4 @@
-import { Column, Entity, ObjectIdColumn, OneToOne } from 'typeorm';
+import { Column, Entity, ObjectIdColumn, OneToOne, OneToMany } from 'typeorm';
 import { Service } from '../../service/entities/service.entity';
 import { IsIn } from 'class-validator';
 import { Booking } from 'src/booking/entities/booking.entity';
@@ -40,11 +40,12 @@ export class User {
   @OneToOne(() => Service, (service) => service.user)
   serviceDetails?: Service;
 
+  @Column({ nullable: true })
+  @OneToMany(() => Booking, (booking) => booking.user)
+  bookings: Booking[];
+
   @Column({ default: false })
   isVerified?: boolean;
-
-  @Column()
-  bookings?: Booking[];
 
   @Column({ nullable: true })
   verificationToken?: string;
