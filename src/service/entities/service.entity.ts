@@ -48,7 +48,7 @@ export class Service {
   @JoinColumn()
   user: User;
 
-  @ManyToOne(() => Booking, (booking) => booking.service, { eager: true })
+  @ManyToOne(() => Booking, (booking) => booking.service)
   @JoinColumn()
   bookings: Booking[];
 

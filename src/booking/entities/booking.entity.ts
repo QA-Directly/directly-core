@@ -1,4 +1,6 @@
-import { Column, Entity, ObjectIdColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, ObjectIdColumn } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
+import { Service } from '../../service/entities/service.entity';
 
 @Entity('bookings')
 export class Booking {
@@ -28,6 +30,14 @@ export class Booking {
 
   @Column()
   note: string;
+
+  @ManyToOne(() => User, (user) => user.bookings)
+  @JoinColumn()
+  user: User;
+
+  @ManyToOne(() => Service, (service) => service.bookings)
+  @JoinColumn()
+  service: Service;
 
   @Column()
   userId: string; // Store only the User ID

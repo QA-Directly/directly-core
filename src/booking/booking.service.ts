@@ -18,8 +18,10 @@ export class BookingService {
     private vendorRepository: Repository<Service>,
   ) {}
 
-  async createBooking(userId: string, createBookingDto: CreateBookingDto) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+  async create(createBookingDto: CreateBookingDto) {
+    const user = await this.userRepository.findOne({
+      where: { id: createBookingDto.userId },
+    });
     const vendor = await this.vendorRepository.findOne({
       where: { id: createBookingDto.serviceId },
     });
@@ -33,7 +35,7 @@ export class BookingService {
       time: createBookingDto.time,
       status: 'pending',
       serviceId: createBookingDto.serviceId,
-      userId: userId,
+      userId: createBookingDto.userId,
     });
 
     return await this.bookingRepository.save(booking);
