@@ -1,6 +1,4 @@
-import { Column, Entity, ManyToOne, ObjectIdColumn, JoinColumn } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
-import { Service } from '../../service/entities/service.entity';
+import { Column, Entity, ObjectIdColumn } from 'typeorm';
 
 @Entity('bookings')
 export class Booking {
@@ -14,7 +12,7 @@ export class Booking {
   lastName: string;
 
   @Column()
-  date: Date;
+  date: string;
 
   @Column()
   address: string;
@@ -26,13 +24,14 @@ export class Booking {
   phone: string;
 
   @Column()
+  status: string;
+
+  @Column()
   note: string;
 
-  @ManyToOne(() => User, (user) => user.bookings, { eager: true })
-  @JoinColumn({ name: 'userId' })
-  user: User;
+  @Column()
+  userId: string; // Store only the User ID
 
-  @ManyToOne(() => Service, (service) => service.bookings, { eager: true })
-  @JoinColumn({ name: 'vendorId' })
-  service: Service;
+  @Column()
+  serviceId: string; // Store only the Service ID
 }

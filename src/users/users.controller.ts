@@ -20,8 +20,8 @@ import { CreateUserDto } from './dto/create-user';
 import { User } from './entities/user.entity';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
-import { VendorService } from 'src/vendor/vendor.service';
-import { CreateVendorDto } from 'src/vendor/dto/create-vendor.dto';
+import { ServiceService } from 'src/service/service.service';
+import { CreateServiceDto } from 'src/service/dto/create-service.dto';
 import { SignInDto } from './dto/signin-request.dto';
 
 @ApiTags('users')
@@ -29,7 +29,7 @@ import { SignInDto } from './dto/signin-request.dto';
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly vendorService: VendorService,
+    private readonly vendorService: ServiceService,
   ) {}
 
   @Post()
@@ -70,13 +70,16 @@ export class UsersController {
   )
   async applyForVendor(
     @CurrentUser() user: User,
-    @Body() vendorDto: CreateVendorDto,
+    @Body() serviceDto: CreateServiceDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
     if (file) {
-      vendorDto.idImage = file.filename;
+      serviceDto.idImage = file.filename;
     }
-    const vendor = await this.vendorService.createVendor(user.email, vendorDto);
+    const vendor = await this.vendorService.createService(
+      user.email,
+      serviceDto,
+    );
     return { message: 'Vendor application submitted', vendor };
   }
 
