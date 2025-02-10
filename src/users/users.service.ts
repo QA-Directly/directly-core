@@ -23,14 +23,6 @@ export class UsersService {
     private configService: ConfigService,
   ) {}
 
-  // async findUserById(id: string): Promise<User> {
-  //   const user = await this.usersRepository.findOne({ where: { id } });
-  //   if (!user) {
-  //     throw new NotFoundException('User not found');
-  //   }
-  //   return user;
-  // }
-
   async findUserByEmail(email: string): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { email } });
     if (!user) {

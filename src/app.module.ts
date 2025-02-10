@@ -7,8 +7,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { User } from './users/entities/user.entity';
 import { BookingModule } from './booking/booking.module';
-import { VendorModule } from './service/service.module';
-import { Vendor } from './service/entities/service.entity';
+import { ServiceModule } from './service/service.module';
+import { Service } from './service/entities/service.entity';
+import { Booking } from './booking/entities/booking.entity';
 
 @Module({
   imports: [
@@ -23,14 +24,14 @@ import { Vendor } from './service/entities/service.entity';
         type: 'mongodb',
         url: configService.getOrThrow<string>('DATABASE_URL'),
         synchronize: false,
-        entities: [User, Vendor],
+        entities: [User, Service, Booking],
         useUnifiedTopology: true,
         autoLoadEntities: true,
       }),
     }),
     UsersModule,
     AuthModule,
-    VendorModule,
+    ServiceModule,
     BookingModule,
   ],
   controllers: [AppController],

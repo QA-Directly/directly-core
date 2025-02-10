@@ -12,7 +12,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 export class ServiceService {
   constructor(
     @InjectRepository(Service)
-    private vendorRepository: Repository<Service>,
+    private serviceRepository: Repository<Service>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private readonly usersService: UsersService,
@@ -25,7 +25,7 @@ export class ServiceService {
     const user = await this.usersService.findUserByEmail(email);
     if (!user) throw new NotFoundException('User not found');
 
-    const existingService = await this.vendorRepository.findOne({
+    const existingService = await this.serviceRepository.findOne({
       where: { user: { email } },
     });
     if (existingService)
@@ -33,17 +33,17 @@ export class ServiceService {
         'You are already a vendor or have a pending application',
       );
 
-    const createdService = this.vendorRepository.create({
+    const createdService = this.serviceRepository.create({
       user,
       ...serviceDto,
     });
 
-    const service = await this.vendorRepository.save(createdService);
+    const service = await this.serviceRepository.save(createdService);
     return service;
   }
 
   async approveVendor(userId: string): Promise<Service> {
-    const vendor = await this.vendorRepository.findOne({
+    const vendor = await this.serviceRepository.findOne({
       where: { user: { id: userId } },
       relations: ['user'],
     });
@@ -53,17 +53,17 @@ export class ServiceService {
     vendor.user.role = 'vendor';
     await this.userRepository.save(vendor.user);
 
-    return this.vendorRepository.save(vendor);
+    return this.serviceRepository.save(vendor);
   }
 
   async rejectVendor(userId: string): Promise<Service> {
-    const vendor = await this.vendorRepository.findOne({
+    const vendor = await this.serviceRepository.findOne({
       where: { user: { id: userId } },
     });
     if (!vendor) throw new NotFoundException('Vendor application not found');
 
     vendor.status = 'rejected';
-    return this.vendorRepository.save(vendor);
+    return this.serviceRepository.save(vendor);
   }
 
   create(createVendorDto: CreateServiceDto) {
