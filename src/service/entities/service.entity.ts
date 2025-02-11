@@ -1,5 +1,4 @@
-import { Entity, Column, JoinColumn, ObjectIdColumn, ManyToOne } from 'typeorm';
-import { Booking } from 'src/booking/entities/booking.entity';
+import { Entity, Column, ObjectIdColumn } from 'typeorm';
 import { ObjectId } from 'mongodb';
 
 @Entity('service-providers')
@@ -42,4 +41,7 @@ export class Service {
 
   @Column({ default: 'regular' })
   status: string;
+
+  @Column({ default: 0 })
+  averageRating: number;
 }

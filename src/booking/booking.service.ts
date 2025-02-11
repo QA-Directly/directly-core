@@ -39,16 +39,8 @@ export class BookingService {
     }
 
     const booking = this.bookingRepository.create({
-      firstName: createBookingDto.firstName,
-      lastName: createBookingDto.lastName,
-      phone: createBookingDto.phone,
-      address: createBookingDto.address,
-      note: createBookingDto.note,
-      date: createBookingDto.date,
-      time: createBookingDto.time,
+      ...createBookingDto,
       status: 'pending',
-      serviceId: createBookingDto.serviceId,
-      userId: createBookingDto.userId,
     });
 
     return await this.bookingRepository.save(booking);
