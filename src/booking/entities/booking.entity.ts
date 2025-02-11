@@ -1,12 +1,16 @@
-import { Column, Entity, JoinColumn, ManyToOne, ObjectIdColumn } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
-import { Service } from '../../service/entities/service.entity';
+import {
+  Column,
+  Entity,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ObjectIdColumn,
+} from 'typeorm';
 import { ObjectId } from 'mongodb';
 
 @Entity('bookings')
 export class Booking {
   @ObjectIdColumn()
-  id: string;
+  _id: ObjectId;
 
   @Column()
   firstName: string;
@@ -18,10 +22,10 @@ export class Booking {
   date: string;
 
   @Column()
-  address: string;
+  time: string;
 
   @Column()
-  time: string;
+  address: string;
 
   @Column()
   phone: string;
@@ -32,13 +36,14 @@ export class Booking {
   @Column()
   note: string;
 
-  @ManyToOne(() => User, (user) => user.bookings)
-  @JoinColumn()
-  user: User;
+  @Column({ nullable: true })
+  rescheduledFrom: ObjectId;
 
-  @ManyToOne(() => Service, (service) => service.bookings)
-  @JoinColumn()
-  service: Service;
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @Column()
   userId: ObjectId;

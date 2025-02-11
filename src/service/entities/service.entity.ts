@@ -42,8 +42,4 @@ export class Service {
 
   @Column({ default: 'regular' })
   status: string;
-
-  @ManyToOne(() => Booking, (booking) => booking.service)
-  @JoinColumn()
-  bookings: Booking[];
 }
