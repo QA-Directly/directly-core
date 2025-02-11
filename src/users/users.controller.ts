@@ -14,7 +14,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user';
 import { User } from './entities/user.entity';
@@ -35,6 +35,10 @@ export class UsersController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new user' })
+  @ApiBody({
+    type: CreateUserDto, // This explicitly shows the input schema
+    description: 'Payload to create a new user',
+  })
   @ApiResponse({
     status: 201,
     description: 'The user has been successfully created.',
@@ -51,12 +55,22 @@ export class UsersController {
     description: 'All users fetched successfully',
     type: [User],
   })
-  async getUsers(@CurrentUser() user: User) {
+  async getUsers() {
     return this.usersService.findAll();
   }
 
   @Post('apply-for-vendor')
   @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Apply to be a vendor' })
+  @ApiBody({
+    type: CreateServiceDto,
+    description: 'Service provider application data',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Service provider application submitted',
+    type: Service,
+  })
   @UseInterceptors(
     FileInterceptor('idImage', {
       storage: diskStorage({
