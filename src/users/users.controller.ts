@@ -9,7 +9,7 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
-  Request,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -22,14 +22,15 @@ import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { ServiceService } from 'src/service/service.service';
 import { CreateServiceDto } from 'src/service/dto/create-service.dto';
-import { SignInDto } from './dto/signin-request.dto';
+import { Service } from 'src/service/entities/service.entity';
+import { ObjectId } from 'typeorm';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly vendorService: ServiceService,
+    private readonly serviceService: ServiceService,
   ) {}
 
   @Post()
@@ -76,11 +77,37 @@ export class UsersController {
     if (file) {
       serviceDto.idImage = file.filename;
     }
-    const vendor = await this.vendorService.createService(
+    const service = await this.serviceService.createService(
       user.email,
       serviceDto,
     );
-    return { message: 'Vendor application submitted', vendor };
+    return { message: 'Service provider application submitted', service };
+  }
+
+  @Get('approve-vendor')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Approve a vendor' })
+  @ApiResponse({
+    status: 200,
+    description: 'Vendor approved successfully',
+    type: Service,
+  })
+  async approveVendor(@Query('id') id: string) {
+    const service = await this.serviceService.approveVendor(id);
+    return { message: 'Vendor approved successfully', service };
+  }
+
+  @Get('reject-vendor')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Reject a vendor' })
+  @ApiResponse({
+    status: 200,
+    description: 'Vendor rejected',
+    type: Service,
+  })
+  async rejectVendor(@Query('id') id: ObjectId) {
+    const service = await this.serviceService.rejectVendor(id);
+    return { message: 'Vendor rejected', service };
   }
 
   @Patch(':id')

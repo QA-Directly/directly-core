@@ -1,18 +1,11 @@
-import {
-  Entity,
-  Column,
-  OneToOne,
-  JoinColumn,
-  ObjectIdColumn,
-  ManyToOne,
-} from 'typeorm';
-import { User } from '../../users/entities/user.entity';
+import { Entity, Column, JoinColumn, ObjectIdColumn, ManyToOne } from 'typeorm';
 import { Booking } from 'src/booking/entities/booking.entity';
+import { ObjectId } from 'mongodb';
 
-@Entity('services')
+@Entity('service-providers')
 export class Service {
   @ObjectIdColumn()
-  id: string;
+  _id: ObjectId;
 
   @Column()
   businessName: string;
@@ -44,14 +37,13 @@ export class Service {
   @Column()
   idImage: string;
 
-  @OneToOne(() => User, (user) => user.serviceDetails)
-  @JoinColumn()
-  user: User;
+  @Column()
+  userId: ObjectId;
+
+  @Column({ default: 'regular' })
+  status: string;
 
   @ManyToOne(() => Booking, (booking) => booking.service)
   @JoinColumn()
   bookings: Booking[];
-
-  @Column({ default: 'pending' })
-  status: 'pending' | 'approved' | 'rejected';
 }

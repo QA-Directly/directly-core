@@ -12,6 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from './dto/create-user';
 import * as bcrypt from 'bcrypt';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class UsersService {
@@ -79,7 +80,7 @@ export class UsersService {
   }
 
   async sendVerificationEmail(user: User): Promise<{ message: string }> {
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: user._id, email: user.email };
     user.verificationToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
       expiresIn: '30m',
@@ -124,26 +125,26 @@ export class UsersService {
   }
 
   async storeResetToken(
-    userId: string,
+    userId: ObjectId,
     resetToken: string,
     resetTokenExpiration: Date,
   ): Promise<void> {
     await this.usersRepository.update(
-      { id: userId },
+      { _id: userId },
       { resetToken: resetToken, resetTokenExpiration: resetTokenExpiration },
     );
   }
 
-  async updatePassword(userId: string, newPassword: string): Promise<any> {
+  async updatePassword(userId: ObjectId, newPassword: string): Promise<any> {
     await this.usersRepository.update(
-      { id: userId },
+      { _id: userId },
       { password: newPassword, resetToken: null, resetTokenExpiration: null },
     );
     return { message: 'New password saved successfully' };
   }
 
-  async updateUser(id: string, data: Partial<User>): Promise<any> {
-    return this.usersRepository.update({ id }, data);
+  async updateUser(_id: ObjectId, data: Partial<User>): Promise<any> {
+    return this.usersRepository.update({ _id }, data);
   }
 
   findAll() {

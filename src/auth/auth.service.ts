@@ -32,7 +32,7 @@ export class AuthService {
     expiresRefreshToken: Date;
   }> {
     const tokenPayload = {
-      sub: user.id,
+      sub: user._id,
       email: user.email,
     };
 
@@ -107,7 +107,7 @@ export class AuthService {
         throw new UnauthorizedException('Password is incorrect');
       }
       return {
-        id: user.id,
+        _id: user._id,
         email: user.email,
       };
     } catch (error) {
@@ -124,7 +124,7 @@ export class AuthService {
       expiresRefreshToken,
     } = loginTokens;
 
-    await this.usersService.updateUser(user.id, {
+    await this.usersService.updateUser(user._id, {
       refreshToken: await bcrypt.hash(refreshToken, 10),
       refreshTokenExpiration: expiresRefreshToken,
     });
@@ -136,7 +136,7 @@ export class AuthService {
     });
 
     return {
-      id: user.id,
+      _id: user._id,
       email: user.email,
     };
   }
@@ -188,13 +188,13 @@ export class AuthService {
   }
 
   async sendPasswordResetLInk(email: string, user: User): Promise<any> {
-    const payload = { email, sub: user.id };
+    const payload = { email, sub: user._id };
     const token = await this.jwtService.signAsync(payload);
     const resetTokenExpiration = new Date();
     resetTokenExpiration.setHours(resetTokenExpiration.getHours() + 1);
 
     await this.usersService.storeResetToken(
-      user.id,
+      user._id,
       token,
       resetTokenExpiration,
     );
@@ -214,7 +214,7 @@ export class AuthService {
       throw new UnauthorizedException('Token expired');
     }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await this.usersService.updatePassword(user.id, hashedPassword);
+    await this.usersService.updatePassword(user._id, hashedPassword);
     await this.emailService.sendResetPasswordConfirmationEmail(user.email);
     return { message: 'Password reset successfully' };
   }
@@ -247,7 +247,7 @@ export class AuthService {
       expiresAccessToken,
       expiresRefreshToken,
     } = loginTokens;
-    await this.usersService.updateUser(user.id, {
+    await this.usersService.updateUser(user._id, {
       refreshToken: await bcrypt.hash(refreshToken, 10),
       refreshTokenExpiration: expiresRefreshToken,
     });
@@ -259,7 +259,7 @@ export class AuthService {
     });
     response.redirect('https://frontend-app.com/dashboard');
     return {
-      id: user.id,
+      _id: user._id,
       email: user.email,
     };
   }
@@ -288,13 +288,13 @@ export class AuthService {
       expiresAccessToken,
       expiresRefreshToken,
     } = loginTokens;
-    await this.usersService.updateUser(user.id, {
+    await this.usersService.updateUser(user._id, {
       refreshToken: await bcrypt.hash(refreshToken, 10),
       refreshTokenExpiration: expiresRefreshToken,
     });
     response.redirect('https://frontend-app.com/dashboard');
     return {
-      id: user.id,
+      _id: user._id,
       email: user.email,
     };
   }

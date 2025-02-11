@@ -1,5 +1,6 @@
 import { IsEmail, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { ObjectId } from 'mongodb';
 
 export class SignInDto {
   @ApiProperty({
@@ -14,5 +15,5 @@ export class SignInDto {
     example: 1234567890,
   })
   @IsString()
-  id: string;
+  _id: ObjectId;
 }

@@ -4,15 +4,16 @@ import {
   IsDateString,
   IsOptional,
 } from 'class-validator';
+import { ObjectId } from 'mongodb';
 
 export class CreateBookingDto {
   @IsNotEmpty()
   @IsString()
-  userId: string;
+  userId: ObjectId;
 
   @IsNotEmpty()
   @IsString()
-  serviceId: string;
+  serviceId: ObjectId;
 
   @IsNotEmpty()
   @IsString()
