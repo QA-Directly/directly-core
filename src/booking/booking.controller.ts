@@ -19,9 +19,11 @@ import {
   ApiOperation,
   ApiBody,
   ApiParam,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 
 @ApiTags('Bookings')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('booking')
 export class BookingController {
