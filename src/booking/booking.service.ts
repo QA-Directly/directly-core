@@ -20,10 +20,10 @@ export class BookingService {
 
   async create(createBookingDto: CreateBookingDto) {
     const user = await this.userRepository.findOne({
-      where: { id: createBookingDto.userId },
+      where: { _id: createBookingDto.userId },
     });
     const vendor = await this.vendorRepository.findOne({
-      where: { id: createBookingDto.serviceId },
+      where: { _id: createBookingDto.serviceId },
     });
 
     if (!user || !vendor) {

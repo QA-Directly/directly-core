@@ -1,12 +1,11 @@
-import { Column, Entity, ObjectIdColumn, OneToOne, OneToMany } from 'typeorm';
-import { Service } from '../../service/entities/service.entity';
-import { IsIn } from 'class-validator';
+import { Column, Entity, ObjectIdColumn, OneToMany, JoinColumn } from 'typeorm';
 import { Booking } from 'src/booking/entities/booking.entity';
+import { ObjectId } from 'mongodb';
 
 @Entity('users')
 export class User {
   @ObjectIdColumn()
-  id: string;
+  _id: ObjectId;
 
   @Column({ nullable: true })
   firstName?: string;
@@ -33,15 +32,13 @@ export class User {
   password?: string;
 
   @Column({ default: 'regular' })
-  @IsIn(['regular', 'vendor'])
   role?: string;
 
-  @Column({ nullable: true })
-  @OneToOne(() => Service, (service) => service.user)
-  serviceDetails?: Service;
+  @Column()
+  serviceId?: ObjectId;
 
-  @Column({ nullable: true })
   @OneToMany(() => Booking, (booking) => booking.user)
+  @JoinColumn()
   bookings: Booking[];
 
   @Column({ default: false })

@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, ObjectIdColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Service } from '../../service/entities/service.entity';
+import { ObjectId } from 'mongodb';
 
 @Entity('bookings')
 export class Booking {
@@ -40,8 +41,8 @@ export class Booking {
   service: Service;
 
   @Column()
-  userId: string; // Store only the User ID
+  userId: ObjectId;
 
   @Column()
-  serviceId: string; // Store only the Service ID
+  serviceId: ObjectId;
 }

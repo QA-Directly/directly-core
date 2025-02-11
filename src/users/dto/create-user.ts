@@ -102,20 +102,4 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   role?: string;
-
-  // @ApiPropertyOptional({
-  //   description: 'Password reset token for the user',
-  //   example: 'resetToken123',
-  // })
-  // @IsString()
-  // @IsOptional()
-  // resetToken?: string;
-
-  // @ApiPropertyOptional({
-  //   description: 'Password reset token expiration date',
-  //   example: '2024-12-31T23:59:59Z',
-  // })
-  // @IsDateString()
-  // @IsOptional()
-  // resetTokenExpiration?: Date;
 }
