@@ -10,6 +10,7 @@ import { BookingModule } from './booking/booking.module';
 import { ServiceModule } from './service/service.module';
 import { Service } from './service/entities/service.entity';
 import { Booking } from './booking/entities/booking.entity';
+import { ReviewModule } from './review/review.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { Booking } from './booking/entities/booking.entity';
     AuthModule,
     ServiceModule,
     BookingModule,
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [AppService],
