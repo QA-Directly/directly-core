@@ -3,9 +3,8 @@
 Welcome to the **Directly Backend**, the powerful API that powers Directly – a platform connecting **small business owners, service providers, and customers** seamlessly. This repository handles authentication, data management, and business logic to ensure smooth operations. 🏪🔗
 
 ## 🛠️ Tech Stack
-
 - **Framework:** NestJS 🚀
-- **Database:** PostgreSQL + TypeORM 🐘
+- **Database:** MongoDB + TypeORM 🐘
 - **Authentication:** JWT 🔑
 - **API Documentation:** Swagger 📜
 
@@ -14,7 +13,7 @@ Welcome to the **Directly Backend**, the powerful API that powers Directly – a
 ### Prerequisites
 Make sure you have the following installed:
 - **Node.js** (v16+)
-- **PostgreSQL**
+- **MongoDB**
 -  **npm**
 
 ### Installation
@@ -26,9 +25,6 @@ cd directly-backend
 # Install dependencies
 npm install  
 
-# Set up environment variables
-cp .env.example .env
-```
 
 ### Running the App
 ```sh
