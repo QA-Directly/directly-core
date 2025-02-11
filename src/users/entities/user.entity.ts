@@ -37,10 +37,6 @@ export class User {
   @Column()
   serviceId?: ObjectId;
 
-  @OneToMany(() => Booking, (booking) => booking.user)
-  @JoinColumn()
-  bookings: Booking[];
-
   @Column({ default: false })
   isVerified?: boolean;
 

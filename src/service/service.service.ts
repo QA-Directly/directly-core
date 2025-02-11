@@ -5,7 +5,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Service } from './entities/service.entity';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
-import { UsersService } from '../users/users.service';
 import { ObjectId } from 'mongodb';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
