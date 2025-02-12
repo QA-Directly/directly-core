@@ -5,11 +5,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Service } from './entities/service.entity';
 import { User } from '../users/entities/user.entity';
 import { UsersModule } from 'src/users/users.module';
+import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Service, User]),
     forwardRef(() => UsersModule),
+    CloudinaryModule,
   ],
   controllers: [ServiceController],
   providers: [ServiceService],
