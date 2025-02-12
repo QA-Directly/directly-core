@@ -257,7 +257,7 @@ export class AuthService {
       expiresAccessToken,
       expiresRefreshToken,
     });
-    response.redirect('https://frontend-app.com/dashboard');
+    response.redirect('https://directly-app.netlify.app/dashboard');
     return {
       _id: user._id,
       email: user.email,
@@ -292,7 +292,13 @@ export class AuthService {
       refreshToken: await bcrypt.hash(refreshToken, 10),
       refreshTokenExpiration: expiresRefreshToken,
     });
-    response.redirect('https://frontend-app.com/dashboard');
+    this.setAuthCookies(response, {
+      accessToken,
+      refreshToken,
+      expiresAccessToken,
+      expiresRefreshToken,
+    });
+    response.redirect('https://directly-app.netlify.app/dashboard');
     return {
       _id: user._id,
       email: user.email,
