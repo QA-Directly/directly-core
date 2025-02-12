@@ -192,9 +192,14 @@ export class AuthController {
     description:
       'Unauthorized if the callback request is invalid or the user is not authenticated.',
   })
-  @UseGuards(PassportGoogleGuard)
+  async googleCallback(
+    @CurrentUser() user: SignInDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return this.authService.googleSignIn(user, response);
+  }
 
-  //https://directly-app.netlify.app/dashboard
+  @UseGuards(PassportGoogleGuard)
   @Get('facebook')
   @ApiBearerAuth()
   @ApiOperation({
@@ -231,8 +236,23 @@ export class AuthController {
       'Unauthorized if the callback request is invalid or the user is not authenticated.',
   })
   @UseGuards(PassportFacebookGuard)
-  async facebookCallback(@Request() req: SocialRequest) {
-    return this.authService.facebookSignIn(req.user);
+  async facebookCallback(
+    @CurrentUser() user: SignInDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return this.authService.facebookSignIn(user, response);
+  }
+
+  @Post('logout')
+  @ApiOperation({
+    summary: 'Logout user',
+    description: 'Logs out the user by clearing the authentication cookies.',
+  })
+  @ApiResponse({ status: 200, description: 'User successfully logged out' })
+  @UseGuards(JwtAuthGuard)
+  async logout(@Res({ passthrough: true }) response: Response) {
+    await this.authService.logout(response);
+    return { message: 'User successfully logged out' };
   }
 
   @Get('profile')
