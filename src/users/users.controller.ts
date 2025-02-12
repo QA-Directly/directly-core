@@ -20,6 +20,7 @@ import {
   ApiTags,
   ApiBody,
   ApiConsumes,
+  ApiParam,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user';
@@ -71,6 +72,7 @@ export class UsersController {
   @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({ summary: 'Upload a profile picture' })
   @ApiConsumes('multipart/form-data')
+  @ApiParam({ name: 'id', required: true, description: 'User ID' })
   @ApiBody({
     description: 'Profile picture uploaded',
     required: true,

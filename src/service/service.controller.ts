@@ -6,17 +6,22 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards,
   UseInterceptors,
   UploadedFiles,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { ServiceService } from './service.service';
-import { ServiceGuard } from './guards/service.guard';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiConsumes,
+  ApiParam,
+  ApiBody,
+  ApiResponse,
+} from '@nestjs/swagger';
 
 @ApiTags('services')
 @Controller('services')
@@ -28,6 +33,28 @@ export class ServiceController {
 
   @Post(':id/upload-media')
   @UseInterceptors(FilesInterceptor('files', 10))
+  @ApiOperation({ summary: 'Upload media files for a service' })
+  @ApiConsumes('multipart/form-data')
+  @ApiParam({ name: 'id', required: true, description: 'Service ID' })
+  @ApiBody({
+    description: 'Upload up to 10 media files',
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Media uploaded successfully' })
+  @ApiResponse({ status: 400, description: 'No files uploaded' })
+  @ApiResponse({ status: 404, description: 'Service not found' })
   async uploadMedia(
     @Param('id') serviceId: ObjectId,
     @UploadedFiles() files: Express.Multer.File[],
@@ -53,7 +80,7 @@ export class ServiceController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateVendorDto: UpdateServiceDto) {
-    return this.serviceService.update(+id, updateVendorDto);
+    return this.serviceService.update(id, updateVendorDto);
   }
 
   @Delete(':id')
