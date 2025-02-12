@@ -47,6 +47,10 @@ export class Service {
   category: string;
 
   @Column()
+  @ApiProperty({ description: 'media files uploaded by service providers' })
+  mediaFiles: string[];
+
+  @Column()
   @ApiProperty({ description: 'Description of the service' })
   description: string;
 

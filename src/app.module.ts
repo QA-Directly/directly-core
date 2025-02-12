@@ -11,6 +11,7 @@ import { ServiceModule } from './service/service.module';
 import { Service } from './service/entities/service.entity';
 import { Booking } from './booking/entities/booking.entity';
 import { ReviewModule } from './review/review.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { ReviewModule } from './review/review.module';
     ServiceModule,
     BookingModule,
     ReviewModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

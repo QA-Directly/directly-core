@@ -88,8 +88,18 @@ export class ServiceService {
     return this.serviceRepository.save(serviceProvider);
   }
 
-  create(createVendorDto: CreateServiceDto) {
-    return 'This action adds a new vendor';
+  async addMediaToService(serviceId: ObjectId, fileUrls: string[]) {
+    const service = await this.serviceRepository.findOne({
+      where: { _id: new ObjectId(serviceId) },
+    });
+
+    if (!service) {
+      throw new Error('Service not found');
+    }
+
+    service.mediaFiles = [...(service.mediaFiles || []), ...fileUrls];
+
+    return await this.serviceRepository.save(service);
   }
 
   findAll() {
