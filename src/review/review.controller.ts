@@ -23,7 +23,7 @@ export class ReviewController {
   @ApiOperation({ summary: 'Add a new review for a service' })
   @ApiResponse({ status: 201, description: 'Review added successfully' })
   @ApiResponse({ status: 400, description: 'Invalid data provided' })
-  @ApiBody({ type: CreateReviewDto }) // Defines request body schema
+  @ApiBody({ type: CreateReviewDto })
   async addReview(@Body() dto: CreateReviewDto) {
     return await this.reviewService.addReview(dto);
   }
