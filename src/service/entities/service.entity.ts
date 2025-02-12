@@ -9,6 +9,12 @@ export class Service {
   _id: ObjectId;
 
   @Column()
+  @ApiProperty({
+    description: 'User ID of the account connected to the provider',
+  })
+  userId: ObjectId;
+
+  @Column()
   @ApiProperty({ description: 'Business name of the service provider' })
   businessName: string;
 
