@@ -6,6 +6,7 @@ import { User } from './entities/user.entity';
 import { EmailModule } from 'src/email/email.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ServiceModule } from 'src/service/service.module';
+import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ServiceModule } from 'src/service/service.module';
     JwtModule,
     EmailModule,
     forwardRef(() => ServiceModule),
+    CloudinaryModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],

@@ -103,6 +103,23 @@ export class AuthController {
   }
 
   @Post('resend-verification')
+  @ApiOperation({ summary: 'Resend verification email' })
+  @ApiBody({
+    description: 'Email of the user who needs verification',
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        email: { type: 'string', format: 'email', example: 'user@example.com' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Verification email resent successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid email' })
+  @ApiResponse({ status: 404, description: 'User not found' })
   async resendVerification(
     @Body() { email }: { email: string },
   ): Promise<void> {

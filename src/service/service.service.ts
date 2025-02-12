@@ -110,7 +110,7 @@ export class ServiceService {
     return `This action returns a #${id} vendor`;
   }
 
-  update(id: number, updateVendorDto: UpdateServiceDto) {
+  update(id: string, updateVendorDto: UpdateServiceDto) {
     return `This action updates a #${id} vendor`;
   }
 
