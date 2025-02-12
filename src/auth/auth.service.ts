@@ -81,12 +81,14 @@ export class AuthService {
     response.cookie('Authentication', tokens.accessToken, {
       httpOnly: true,
       secure: this.configService.get('NODE_ENV') === 'production',
+      sameSite: 'none',
       expires: tokens.expiresAccessToken,
     });
 
     response.cookie('Refresh', tokens.refreshToken, {
       httpOnly: true,
       secure: this.configService.get('NODE_ENV') === 'production',
+      sameSite: 'none',
       expires: tokens.expiresRefreshToken,
     });
   }
@@ -310,10 +312,12 @@ export class AuthService {
   async logout(response: Response): Promise<void> {
     response.clearCookie('Refresh', {
       httpOnly: true,
+      sameSite: 'none',
       secure: this.configService.get('NODE_ENV') === 'production',
     });
     response.clearCookie('Authentication', {
       httpOnly: true,
+      sameSite: 'none',
       secure: this.configService.get('NODE_ENV') === 'production',
     });
     return;

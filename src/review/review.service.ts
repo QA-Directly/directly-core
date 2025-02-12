@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Review } from './entities/review.entity';
@@ -16,11 +16,15 @@ export class ReviewService {
   ) {}
 
   async addReview(dto: CreateReviewDto) {
+    if (!dto.userId || !dto.serviceId || !dto.bookingId) {
+      throw new BadRequestException(
+        'User ID, Service ID, and Booking ID are required',
+      );
+    }
     const review = this.reviewRepository.create(dto);
     await this.reviewRepository.save(review);
 
     await this.updateServiceAverageRating(dto.serviceId);
-
     return await this.reviewRepository.save(review);
   }
 
