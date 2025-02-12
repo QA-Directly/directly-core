@@ -280,7 +280,10 @@ export class AuthService {
     return newUser;
   }
 
-  async facebookSignIn(user: User): Promise<LoginResponseDto> {
+  async facebookSignIn(
+    user: User,
+    response: Response,
+  ): Promise<LoginResponseDto> {
     const loginTokens = await this.generateLoginTokens(user);
     const {
       accessToken,
@@ -303,6 +306,17 @@ export class AuthService {
       _id: user._id,
       email: user.email,
     };
+  }
+  async logout(response: Response): Promise<void> {
+    response.clearCookie('Refresh', {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+    });
+    response.clearCookie('Authentication', {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+    });
+    return;
   }
   async getProfile(email: string): Promise<User> {
     return this.usersService.findUserByEmail(email);
