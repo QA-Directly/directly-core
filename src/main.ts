@@ -11,7 +11,12 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
   app.use(cookieParser());
-  app.enableCors();
+  app.enableCors({
+    origin: 'https://directly-app.netlify.app',
+    credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type',
+  });
   app.useStaticAssets(join(__dirname, '..', 'uploads'), { prefix: '/uploads' });
 
   const config = new DocumentBuilder()
