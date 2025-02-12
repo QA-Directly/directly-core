@@ -16,9 +16,10 @@ import { ServiceGuard } from './guards/service.guard';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { ApiTags } from '@nestjs/swagger';
 
-@Controller('service')
-@UseGuards(ServiceGuard)
+@ApiTags('services')
+@Controller('services')
 export class ServiceController {
   constructor(
     private readonly serviceService: ServiceService,
