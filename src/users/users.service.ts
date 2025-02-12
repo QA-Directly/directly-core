@@ -146,6 +146,17 @@ export class UsersService {
     return this.usersRepository.update({ _id }, data);
   }
 
+  async updateProfilePicture(userId: ObjectId, fileUrl: string) {
+    console;
+    const user = await this.usersRepository.findOne({
+      where: { _id: new ObjectId(userId) },
+    });
+    if (!user) throw new Error('User not found');
+
+    user.profilePicture = fileUrl;
+    return this.usersRepository.save(user);
+  }
+
   findAll() {
     return this.usersRepository.find();
   }

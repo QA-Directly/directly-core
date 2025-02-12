@@ -14,7 +14,13 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import { ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBody,
+  ApiConsumes,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user';
 import { User } from './entities/user.entity';
@@ -23,6 +29,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { ServiceService } from 'src/service/service.service';
 import { CreateServiceDto } from 'src/service/dto/create-service.dto';
 import { Service } from 'src/service/entities/service.entity';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { ObjectId } from 'typeorm';
 
 @ApiTags('users')
@@ -31,12 +38,13 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly serviceService: ServiceService,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new user' })
   @ApiBody({
-    type: CreateUserDto, // This explicitly shows the input schema
+    type: CreateUserDto,
     description: 'Payload to create a new user',
   })
   @ApiResponse({
@@ -57,6 +65,38 @@ export class UsersController {
   })
   async getUsers() {
     return this.usersService.findAll();
+  }
+
+  @Post('/:id/add-profile-picture')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Upload a profile picture' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Profile picture uploaded',
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Profile picture uploaded successfully',
+  })
+  @ApiResponse({ status: 400, description: 'No file uploaded' })
+  async uploadProfilePicture(
+    @Param('id') userId: ObjectId,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) throw new Error('No file uploaded');
+
+    const fileUrl = await this.cloudinaryService.uploadFile(file);
+    return this.usersService.updateProfilePicture(userId, fileUrl);
   }
 
   @Post('apply-for-vendor')

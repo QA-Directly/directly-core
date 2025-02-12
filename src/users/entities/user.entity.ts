@@ -20,6 +20,9 @@ export class User {
   email: string;
 
   @Column({ nullable: true })
+  profilePicture?: string;
+
+  @Column({ nullable: true })
   provider?: string;
 
   @Column({ nullable: true })
