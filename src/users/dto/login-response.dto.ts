@@ -1,28 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNumber, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { ObjectId } from 'mongodb';
 
 export class LoginResponseDto {
-  @IsNumber()
+  @IsNotEmpty()
   @ApiProperty({
     description: 'User ID of the authenticated user',
     example: '1234567890',
   })
   _id: ObjectId;
-
-  @IsString()
-  @ApiProperty({
-    description: 'JWT access token',
-    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-  })
-  accessToken?: string;
-
-  @IsString()
-  @ApiProperty({
-    description: 'JWT refresh token',
-    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-  })
-  refreshToken?: string;
 
   @IsEmail()
   @ApiProperty({
@@ -30,4 +16,11 @@ export class LoginResponseDto {
     example: 'user@example.com',
   })
   email: string;
+
+  @IsString()
+  @ApiProperty({
+    description: 'Role of the authenticated user',
+    example: 'user',
+  })
+  role: string;
 }

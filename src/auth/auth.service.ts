@@ -13,8 +13,10 @@ import { EmailService } from 'src/email/email.service';
 import { LoginResponseDto } from 'src/users/dto/login-response.dto';
 import { SignInDto } from 'src/users/dto/signin-request.dto';
 import { AuthInputDto } from 'src/users/dto/auth-input.dto';
-import { response, Response } from 'express';
+import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
@@ -23,6 +25,8 @@ export class AuthService {
     private jwtService: JwtService,
     private emailService: EmailService,
     private configService: ConfigService,
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
   ) {}
 
   private async generateLoginTokens(user: SignInDto): Promise<{
@@ -118,6 +122,11 @@ export class AuthService {
   }
 
   async signIn(user: SignInDto, response: Response): Promise<LoginResponseDto> {
+    const { _id, email } = user;
+    const foundUser = await this.usersRepository.findOne({
+      where: { _id },
+      select: ['_id', 'email', 'role'],
+    });
     const loginTokens = await this.generateLoginTokens(user);
     const {
       accessToken,
@@ -138,8 +147,9 @@ export class AuthService {
     });
 
     return {
-      _id: user._id,
-      email: user.email,
+      _id: foundUser._id,
+      email: foundUser.email,
+      role: foundUser.role,
     };
   }
 
@@ -263,6 +273,7 @@ export class AuthService {
     return {
       _id: user._id,
       email: user.email,
+      role: user.role,
     };
   }
 
@@ -307,6 +318,7 @@ export class AuthService {
     return {
       _id: user._id,
       email: user.email,
+      role: user.role,
     };
   }
   async logout(response: Response): Promise<void> {

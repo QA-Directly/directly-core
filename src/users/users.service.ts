@@ -23,6 +23,52 @@ export class UsersService {
     private configService: ConfigService,
   ) {}
 
+  async onModuleInit() {
+    await this.seedAdminUser();
+  }
+
+  async seedAdminUser() {
+    const adminExists = await this.usersRepository.findOne({
+      where: { role: 'admin' },
+    });
+
+    if (!adminExists) {
+      const hashedPassword = await bcrypt.hash(
+        this.configService.getOrThrow<string>('ADMIN_PASSWORD'),
+        10,
+      );
+      const adminUser = this.usersRepository.create({
+        email: this.configService.getOrThrow<string>('ADMIN_EMAIL'),
+        password: hashedPassword,
+        role: 'admin',
+        provider: 'local',
+      });
+
+      await this.usersRepository.save(adminUser);
+      console.log('Admin user created.');
+    }
+  }
+
+  async create(user: CreateUserDto): Promise<User> {
+    try {
+      const existingUser = await this.usersRepository.findOne({
+        where: { email: user.email },
+      });
+      if (existingUser) {
+        throw new InternalServerErrorException('User already exists');
+      }
+      user.role = 'user';
+
+      const data = await this.addProviderToUser(user);
+
+      return user.provider === 'local'
+        ? this.createLocalUser(data)
+        : this.createOAuthUser(data);
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
   async findUserByEmail(email: string): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { email } });
     if (!user) {
@@ -40,25 +86,6 @@ export class UsersService {
       user.provider = 'local';
     }
     return user;
-  }
-
-  async create(user: CreateUserDto): Promise<User> {
-    try {
-      const existingUser = await this.usersRepository.findOne({
-        where: { email: user.email },
-      });
-      if (existingUser) {
-        throw new InternalServerErrorException('User already exists');
-      }
-      user.role = 'regular';
-      const data = await this.addProviderToUser(user);
-      if (user.provider === 'local') {
-        return this.createLocalUser(data);
-      }
-      return this.createOAuthUser(user);
-    } catch (error) {
-      throw new InternalServerErrorException(error.message);
-    }
   }
 
   async createOAuthUser(user: CreateUserDto): Promise<User> {

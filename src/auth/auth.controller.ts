@@ -29,11 +29,11 @@ import { ForgotPasswordDto } from 'src/users/dto/forgot-password.dto';
 import { ResetPasswordQueryDto } from 'src/users/dto/reset-password-query.dto';
 import { ResetPasswordBodyDto } from 'src/users/dto/reset-password-body.dto';
 import { LoginResponseDto } from 'src/users/dto/login-response.dto';
-import { AuthRequest, SocialRequest } from './auth.types';
+import { AuthRequest } from './auth.types';
 import { SignInDto } from 'src/users/dto/signin-request.dto';
-import { CreateUserDto } from 'src/users/dto/create-user';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh.guard';
+import { User } from 'src/users/entities/user.entity';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -280,7 +280,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'User profile successfully retrieved',
-    type: CreateUserDto,
+    type: User,
   })
   @UseGuards(JwtAuthGuard)
   async getProfile(@Request() req: AuthRequest) {
