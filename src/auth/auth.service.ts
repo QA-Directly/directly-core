@@ -122,7 +122,7 @@ export class AuthService {
   }
 
   async signIn(user: SignInDto, response: Response): Promise<LoginResponseDto> {
-    const { _id, email } = user;
+    const { _id } = user;
     const foundUser = await this.usersRepository.findOne({
       where: { _id },
       select: ['_id', 'email', 'role'],
@@ -248,10 +248,7 @@ export class AuthService {
     return newUser;
   }
 
-  async googleSignIn(
-    user: User,
-    response: Response,
-  ): Promise<LoginResponseDto> {
+  async googleSignIn(user: User, response: Response): Promise<void> {
     const loginTokens = await this.generateLoginTokens(user);
     const {
       accessToken,
@@ -270,11 +267,6 @@ export class AuthService {
       expiresRefreshToken,
     });
     response.redirect('https://directly-app.netlify.app/dashboard');
-    return {
-      _id: user._id,
-      email: user.email,
-      role: user.role,
-    };
   }
 
   async validateFacebookUser(profile: FacebookData): Promise<any> {
@@ -293,10 +285,7 @@ export class AuthService {
     return newUser;
   }
 
-  async facebookSignIn(
-    user: User,
-    response: Response,
-  ): Promise<LoginResponseDto> {
+  async facebookSignIn(user: User, response: Response): Promise<void> {
     const loginTokens = await this.generateLoginTokens(user);
     const {
       accessToken,
@@ -315,12 +304,8 @@ export class AuthService {
       expiresRefreshToken,
     });
     response.redirect('https://directly-app.netlify.app/dashboard');
-    return {
-      _id: user._id,
-      email: user.email,
-      role: user.role,
-    };
   }
+
   async logout(response: Response): Promise<void> {
     response.clearCookie('Refresh', {
       httpOnly: true,
