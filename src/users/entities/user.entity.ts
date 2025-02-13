@@ -29,9 +29,6 @@ export class User {
   facebookId?: string;
 
   @Column({ nullable: true })
-  avatar?: string;
-
-  @Column({ nullable: true })
   password?: string;
 
   @Column({ default: 'regular' })
