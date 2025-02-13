@@ -201,7 +201,10 @@ export class AuthService {
 
   async sendPasswordResetLInk(email: string, user: User): Promise<any> {
     const payload = { email, sub: user._id };
-    const token = await this.jwtService.signAsync(payload);
+    const token = await this.jwtService.signAsync(payload, {
+      secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
+      expiresIn: `${this.configService.getOrThrow<string>('JWT_ACCESS_EXPIRES_IN')}m`,
+    });
     const resetTokenExpiration = new Date();
     resetTokenExpiration.setHours(resetTokenExpiration.getHours() + 1);
 
