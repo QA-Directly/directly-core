@@ -241,7 +241,7 @@ export class AuthService {
       email: profile.email,
       firstName: profile.firstName,
       lastName: profile.lastName,
-      avatar: profile.avatar,
+      profilePicture: profile.avatar,
       provider: profile.provider,
       facebookId: null,
     });

@@ -38,6 +38,14 @@ export class CreateUserDto {
   @IsOptional()
   googleId?: string;
 
+  @IsString()
+  @IsOptional()
+  @ApiPropertyOptional({
+    description: 'URL for the user profile picture',
+    example: 'https://example.com/profile.jpg',
+  })
+  profilePicture?: string;
+
   @ApiPropertyOptional({
     description: 'Facebook ID for authentication',
     example: '12345678',
@@ -45,14 +53,6 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   facebookId?: string;
-
-  @ApiPropertyOptional({
-    description: 'Avatar URL for the user',
-    example: 'https://example.com/avatar.jpg',
-  })
-  @IsString()
-  @IsOptional()
-  avatar?: string;
 
   @ApiPropertyOptional({
     description: 'The provider for the user authentication',

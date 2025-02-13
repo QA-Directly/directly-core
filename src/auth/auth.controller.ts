@@ -194,6 +194,7 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
+  @UseGuards(PassportGoogleGuard)
   @Get('google/callback')
   @ApiOperation({
     summary: 'Handle Google OAuth2 callback',
@@ -216,7 +217,6 @@ export class AuthController {
     return this.authService.googleSignIn(user, response);
   }
 
-  @UseGuards(PassportGoogleGuard)
   @Get('facebook')
   @ApiBearerAuth()
   @ApiOperation({
