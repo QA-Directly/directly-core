@@ -23,23 +23,30 @@ export class UsersService {
     private configService: ConfigService,
   ) {}
 
-  async findUserByEmail(email: string): Promise<User> {
-    const user = await this.usersRepository.findOne({ where: { email } });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return user;
+  async onModuleInit() {
+    await this.seedAdminUser();
   }
 
-  async addProviderToUser(user: CreateUserDto) {
-    if (user.googleId) {
-      user.provider = 'google';
-    } else if (user.facebookId) {
-      user.provider = 'facebook';
-    } else {
-      user.provider = 'local';
+  async seedAdminUser() {
+    const adminExists = await this.usersRepository.findOne({
+      where: { role: 'admin' },
+    });
+
+    if (!adminExists) {
+      const hashedPassword = await bcrypt.hash(
+        this.configService.getOrThrow<string>('ADMIN_PASSWORD'),
+        10,
+      );
+      const adminUser = this.usersRepository.create({
+        email: this.configService.getOrThrow<string>('ADMIN_EMAIL'),
+        password: hashedPassword,
+        role: 'admin',
+        provider: 'local',
+      });
+
+      await this.usersRepository.save(adminUser);
+      console.log('Admin user created.');
     }
-    return user;
   }
 
   async create(user: CreateUserDto): Promise<User> {
@@ -60,6 +67,25 @@ export class UsersService {
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
+  }
+
+  async findUserByEmail(email: string): Promise<User> {
+    const user = await this.usersRepository.findOne({ where: { email } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
+  async addProviderToUser(user: CreateUserDto) {
+    if (user.googleId) {
+      user.provider = 'google';
+    } else if (user.facebookId) {
+      user.provider = 'facebook';
+    } else {
+      user.provider = 'local';
+    }
+    return user;
   }
 
   async createOAuthUser(user: CreateUserDto): Promise<User> {
