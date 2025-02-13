@@ -58,7 +58,6 @@ export class ServiceService {
         'No pending application found for this user',
       );
     }
-
     await this.userRepository.update(
       { _id: new ObjectId(userId) },
       { role: 'service-provider' },

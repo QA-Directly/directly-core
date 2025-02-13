@@ -50,12 +50,13 @@ export class UsersService {
       if (existingUser) {
         throw new InternalServerErrorException('User already exists');
       }
-      user.role = 'regular';
+      user.role = 'user';
+
       const data = await this.addProviderToUser(user);
-      if (user.provider === 'local') {
-        return this.createLocalUser(data);
-      }
-      return this.createOAuthUser(user);
+
+      return user.provider === 'local'
+        ? this.createLocalUser(data)
+        : this.createOAuthUser(data);
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
