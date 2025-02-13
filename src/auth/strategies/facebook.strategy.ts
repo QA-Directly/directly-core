@@ -15,7 +15,10 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     });
   }
 
-  async validate(accessToken: string, profile: any, done: VerifyCallback) {
+  async validate(accessToken: string, refreshToken: string, profile: any) {
+    console.log('profile', profile);
+    console.log('accessToken', accessToken);
+    console.log('refreshToken', refreshToken);
     const { id, name, emails, provider } = profile;
     const user = {
       facebookId: id,
@@ -23,9 +26,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
       lastName: name.familyName,
       email: emails[0].value,
       provider,
-      accessToken,
     };
-    const payload = await this.authService.validateFacebookUser(user);
-    done(null, payload);
+    return await this.authService.validateFacebookUser(user);
   }
 }
