@@ -78,7 +78,6 @@ export class ServiceService {
         'No pending application found for this user',
       );
     }
-
     await this.userRepository.update(
       { _id: new ObjectId(userId) },
       { role: 'regular', serviceId: null },
@@ -102,7 +101,8 @@ export class ServiceService {
   }
 
   findAll() {
-    return `This action returns all vendor`;
+    const services = this.serviceRepository.find();
+    return services;
   }
 
   findOne(id: number) {
