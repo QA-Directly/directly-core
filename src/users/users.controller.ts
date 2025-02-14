@@ -9,7 +9,7 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
-  Query,
+  Put,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -98,7 +98,52 @@ export class UsersController {
     if (!file) throw new Error('No file uploaded');
 
     const fileUrl = await this.cloudinaryService.uploadFile(file);
-    return this.usersService.updateProfilePicture(userId, fileUrl);
+    return this.usersService.addProfilePicture(userId, fileUrl);
+  }
+
+  @Put(':id/edit-profile-picture')
+  @ApiOperation({ summary: 'Update user profile picture' })
+  @ApiParam({
+    name: 'id',
+    required: true,
+    type: String,
+    description: 'User ID',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        fileUrl: { type: 'string', example: 'https://example.com/image.jpg' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Profile picture updated successfully',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async updateProfilePicture(
+    @Param('id') id: ObjectId,
+    @Body('fileUrl') fileUrl: string,
+  ) {
+    return this.usersService.updateProfilePicture(id, fileUrl);
+  }
+
+  @Delete(':id/profile-picture')
+  @ApiOperation({ summary: 'Delete user profile picture' })
+  @ApiParam({
+    name: 'id',
+    required: true,
+    type: String,
+    description: 'User ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Profile picture removed successfully',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async deleteProfilePicture(@Param('id') id: ObjectId) {
+    return this.usersService.deleteProfilePicture(id);
   }
 
   @Post('apply-for-vendor')

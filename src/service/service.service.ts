@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -69,11 +69,45 @@ export class ServiceService {
     return `This action returns a #${id} vendor`;
   }
 
-  update(id: string, updateVendorDto: UpdateServiceDto) {
-    return `This action updates a #${id} vendor`;
+  async updateMediaInService(
+    serviceId: ObjectId,
+    oldFileUrl: string,
+    newFileUrl: string,
+  ) {
+    const service = await this.serviceRepository.findOne({
+      where: { _id: new ObjectId(serviceId) },
+    });
+
+    if (!service) {
+      throw new NotFoundException('Service not found');
+    }
+
+    const mediaIndex = service.mediaFiles?.indexOf(oldFileUrl);
+    if (mediaIndex === -1 || mediaIndex === undefined) {
+      throw new NotFoundException('Old media file not found');
+    }
+
+    service.mediaFiles[mediaIndex] = newFileUrl;
+
+    return await this.serviceRepository.save(service);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} vendor`;
+  async deleteMediaFromService(serviceId: ObjectId, fileUrl: string) {
+    const service = await this.serviceRepository.findOne({
+      where: { _id: new ObjectId(serviceId) },
+    });
+
+    if (!service) {
+      throw new NotFoundException('Service not found');
+    }
+
+    const filteredMedia = service.mediaFiles?.filter((url) => url !== fileUrl);
+    if (filteredMedia?.length === service.mediaFiles?.length) {
+      throw new NotFoundException('Media file not found');
+    }
+
+    service.mediaFiles = filteredMedia;
+
+    return await this.serviceRepository.save(service);
   }
 }
