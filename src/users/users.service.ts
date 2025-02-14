@@ -174,8 +174,8 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  findAll() {
-    return this.usersRepository.find();
+  findUser(id: ObjectId) {
+    return this.usersRepository.findOne({ where: { _id: id } });
   }
 
   update(id: number, updateUserDto: Partial<User>) {

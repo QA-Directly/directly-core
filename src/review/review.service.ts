@@ -5,6 +5,7 @@ import { Review } from './entities/review.entity';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { Service } from 'src/service/entities/service.entity';
 import { ObjectId } from 'mongodb';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class ReviewService {
@@ -13,6 +14,7 @@ export class ReviewService {
     private readonly reviewRepository: Repository<Review>,
     @InjectRepository(Service)
     private readonly serviceRepository: Repository<Service>,
+    private readonly userService: UsersService,
   ) {}
 
   async addReview(dto: CreateReviewDto) {
@@ -25,7 +27,8 @@ export class ReviewService {
     await this.reviewRepository.save(review);
 
     await this.updateServiceAverageRating(dto.serviceId);
-    return await this.reviewRepository.save(review);
+    const reviewer = await this.userService.findUser(dto.userId);
+    return { review: review, reviewer: reviewer };
   }
 
   async updateServiceAverageRating(serviceId: ObjectId) {
