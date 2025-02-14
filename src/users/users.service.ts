@@ -174,6 +174,10 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
+  findUser(id: ObjectId) {
+    return this.usersRepository.findOne({ where: { _id: id } });
+  }
+
   findAll() {
     return this.usersRepository.find();
   }

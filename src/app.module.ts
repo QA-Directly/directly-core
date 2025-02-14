@@ -16,6 +16,7 @@ import { AdminController } from './admin/admin.controller';
 import { SeedService } from './database/seed.service';
 import { AdminService } from './admin/admin.service';
 import { AdminModule } from './admin/admin.module';
+import { ServiceApplicationModule } from './service-application/service-application.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { AdminModule } from './admin/admin.module';
     ReviewModule,
     CloudinaryModule,
     AdminModule,
+    ServiceApplicationModule,
   ],
   controllers: [AppController, AdminController],
   providers: [AppService, SeedService, AdminService],

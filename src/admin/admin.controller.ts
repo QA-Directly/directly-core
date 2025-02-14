@@ -20,8 +20,8 @@ export class AdminController {
     type: Service,
   })
   @ApiQuery({ name: 'id', type: ObjectId, description: 'service ID' })
-  async approveVendor(@Query('id') id: ObjectId) {
-    const service = await this.adminService.approveVendor(id);
+  async approveService(@Query('id') id: ObjectId) {
+    const service = await this.adminService.approveService(id);
     return { message: 'Service provider approved successfully', service };
   }
 
