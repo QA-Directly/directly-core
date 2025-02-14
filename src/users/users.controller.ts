@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Put,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -32,13 +33,15 @@ import { CreateServiceDto } from 'src/service/dto/create-service.dto';
 import { Service } from 'src/service/entities/service.entity';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { ObjectId } from 'typeorm';
+import { CreateServiceApplicationDto } from 'src/service-application/dto/create-service-application.dto';
+import { ServiceApplicationService } from 'src/service-application/service-application.service';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly serviceService: ServiceService,
+    private readonly serviceApplicationService: ServiceApplicationService,
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
@@ -158,31 +161,35 @@ export class UsersController {
     description: 'Service provider application submitted',
     type: Service,
   })
-  @UseInterceptors(
-    FileInterceptor('idImage', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'identification file uploaded',
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
         },
-      }),
-    }),
-  )
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
   async applyForVendor(
     @CurrentUser() user: User,
-    @Body() serviceDto: CreateServiceDto,
+    @Body() applicationDto: CreateServiceApplicationDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    if (file) {
-      serviceDto.idImage = file.filename;
-    }
-    const service = await this.serviceService.createService(
-      user.email,
-      serviceDto,
-    );
-    return { message: 'Service provider application submitted', service };
+    if (!file) throw new BadRequestException('No file uploaded');
+    const fileUrl = await this.cloudinaryService.uploadFile(file);
+    const serviceApplication =
+      await this.serviceApplicationService.createServiceApplication(
+        user._id,
+        fileUrl,
+        applicationDto,
+      );
+    return serviceApplication;
   }
 
   @Patch(':id')

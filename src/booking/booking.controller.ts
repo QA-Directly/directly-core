@@ -22,7 +22,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 
-@ApiTags('Bookings')
+@ApiTags('booking')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('booking')

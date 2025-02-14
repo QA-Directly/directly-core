@@ -1,8 +1,8 @@
 import { Entity, Column, ObjectIdColumn } from 'typeorm';
 import { ObjectId } from 'mongodb';
 
-@Entity('service-providers')
-export class Service {
+@Entity('service-application')
+export class ServiceApplication {
   @ObjectIdColumn()
   _id: ObjectId;
 
@@ -34,17 +34,11 @@ export class Service {
   category: string;
 
   @Column()
-  mediaFiles: string[];
-
-  @Column()
   description: string;
-
-  @Column()
-  idImage: string;
 
   @Column({ default: 'pending' })
   status: string;
 
-  @Column({ default: 0, nullable: true })
-  averageRating?: number;
+  @Column()
+  idImage: string;
 }

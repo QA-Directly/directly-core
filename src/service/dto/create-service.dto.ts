@@ -58,11 +58,4 @@ export class CreateServiceDto {
   })
   @IsString()
   description: string;
-
-  @ApiProperty({
-    description: 'Image ID of the business identification document',
-    example: 'id_image_12345.jpg',
-  })
-  @IsString()
-  idImage: string;
 }
