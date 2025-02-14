@@ -178,6 +178,10 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { _id: id } });
   }
 
+  findAll() {
+    return this.usersRepository.find();
+  }
+
   update(id: number, updateUserDto: Partial<User>) {
     return `This action updates a #${id} user`;
   }
