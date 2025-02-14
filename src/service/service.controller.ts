@@ -22,6 +22,9 @@ import {
   ApiBody,
   ApiResponse,
 } from '@nestjs/swagger';
+import { Service } from './entities/service.entity';
+import { UpdateMediaDto } from './dto/update-media.dto';
+import { DeleteMediaDto } from './dto/delete-media.dto';
 
 @ApiTags('services')
 @Controller('services')
@@ -79,12 +82,33 @@ export class ServiceController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateVendorDto: UpdateServiceDto) {
-    return this.serviceService.update(id, updateVendorDto);
+  @ApiOperation({ summary: 'Update a media file on a service' })
+  @ApiBody({ type: UpdateServiceDto })
+  @ApiResponse({ status: 200, type: Service })
+  @ApiParam({ name: 'id', description: 'Service ID' })
+  async updateMedia(
+    @Param('id') serviceId: ObjectId,
+    @Body() UpdateMediaDto: UpdateMediaDto,
+  ) {
+    return this.serviceService.updateMediaInService(
+      serviceId,
+      UpdateMediaDto.oldFileUrl,
+      UpdateMediaDto.newFileUrl,
+    );
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.serviceService.remove(+id);
+  @Delete(':id/delete-media')
+  @ApiOperation({ summary: 'Delete a media file from a service' })
+  @ApiResponse({ type: Service })
+  @ApiParam({ name: 'id', description: 'Service ID' })
+  @ApiBody({ type: DeleteMediaDto })
+  async deleteMedia(
+    @Param('id') serviceId: ObjectId,
+    @Body() deleteMediaDto: DeleteMediaDto,
+  ) {
+    return this.serviceService.deleteMediaFromService(
+      serviceId,
+      deleteMediaDto.fileUrl,
+    );
   }
 }
