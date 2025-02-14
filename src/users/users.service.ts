@@ -144,14 +144,33 @@ export class UsersService {
     return this.usersRepository.update({ _id }, data);
   }
 
-  async updateProfilePicture(userId: ObjectId, fileUrl: string) {
-    console;
+  async addProfilePicture(userId: ObjectId, fileUrl: string) {
     const user = await this.usersRepository.findOne({
       where: { _id: new ObjectId(userId) },
     });
     if (!user) throw new Error('User not found');
 
     user.profilePicture = fileUrl;
+    return this.usersRepository.save(user);
+  }
+
+  async updateProfilePicture(userId: ObjectId, newFileUrl: string) {
+    const user = await this.usersRepository.findOne({
+      where: { _id: new ObjectId(userId) },
+    });
+    if (!user) throw new NotFoundException('User not found');
+
+    user.profilePicture = newFileUrl;
+    return this.usersRepository.save(user);
+  }
+
+  async deleteProfilePicture(userId: ObjectId) {
+    const user = await this.usersRepository.findOne({
+      where: { _id: new ObjectId(userId) },
+    });
+    if (!user) throw new NotFoundException('User not found');
+
+    user.profilePicture = null;
     return this.usersRepository.save(user);
   }
 
