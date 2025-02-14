@@ -15,6 +15,6 @@ import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
   ],
   controllers: [ServiceController],
   providers: [ServiceService],
-  exports: [ServiceService],
+  exports: [ServiceService, TypeOrmModule],
 })
 export class ServiceModule {}

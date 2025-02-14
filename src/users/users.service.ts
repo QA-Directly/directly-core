@@ -23,32 +23,6 @@ export class UsersService {
     private configService: ConfigService,
   ) {}
 
-  async onModuleInit() {
-    await this.seedAdminUser();
-  }
-
-  async seedAdminUser() {
-    const adminExists = await this.usersRepository.findOne({
-      where: { role: 'admin' },
-    });
-
-    if (!adminExists) {
-      const hashedPassword = await bcrypt.hash(
-        this.configService.getOrThrow<string>('ADMIN_PASSWORD'),
-        10,
-      );
-      const adminUser = this.usersRepository.create({
-        email: this.configService.getOrThrow<string>('ADMIN_EMAIL'),
-        password: hashedPassword,
-        role: 'admin',
-        provider: 'local',
-      });
-
-      await this.usersRepository.save(adminUser);
-      console.log('Admin user created.');
-    }
-  }
-
   async create(user: CreateUserDto): Promise<User> {
     try {
       const existingUser = await this.usersRepository.findOne({

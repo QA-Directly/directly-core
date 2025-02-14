@@ -1,6 +1,7 @@
-import { Column, Entity, ObjectIdColumn, OneToMany, JoinColumn } from 'typeorm';
-import { Booking } from 'src/booking/entities/booking.entity';
+import { Column, Entity, ObjectIdColumn } from 'typeorm';
 import { ObjectId } from 'mongodb';
+
+export type UserRole = 'user' | 'service-provider' | 'admin';
 
 @Entity('users')
 export class User {
@@ -31,7 +32,7 @@ export class User {
   @Column({ nullable: true })
   password?: string;
 
-  @Column({ default: 'regular' })
+  @Column({ type: 'text', default: 'user' })
   role?: string;
 
   @Column()

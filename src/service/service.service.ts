@@ -46,46 +46,6 @@ export class ServiceService {
     return service;
   }
 
-  async approveVendor(userId: string): Promise<Service> {
-    const serviceProvider = await this.serviceRepository.findOne({
-      where: { userId: new ObjectId(userId) },
-    });
-    if (!serviceProvider) {
-      throw new NotFoundException('Vendor application not found');
-    }
-    if (serviceProvider.status !== 'pending') {
-      throw new BadRequestException(
-        'No pending application found for this user',
-      );
-    }
-    await this.userRepository.update(
-      { _id: new ObjectId(userId) },
-      { role: 'service-provider' },
-    );
-    serviceProvider.status = 'approved';
-    return await this.serviceRepository.save(serviceProvider);
-  }
-
-  async rejectVendor(userId: ObjectId): Promise<Service> {
-    const serviceProvider = await this.serviceRepository.findOne({
-      where: { userId: new ObjectId(userId) },
-    });
-    if (!serviceProvider) {
-      throw new NotFoundException('Vendor application not found');
-    }
-    if (serviceProvider.status !== 'pending') {
-      throw new BadRequestException(
-        'No pending application found for this user',
-      );
-    }
-    await this.userRepository.update(
-      { _id: new ObjectId(userId) },
-      { role: 'regular', serviceId: null },
-    );
-    serviceProvider.status = 'rejected';
-    return this.serviceRepository.save(serviceProvider);
-  }
-
   async addMediaToService(serviceId: ObjectId, fileUrls: string[]) {
     const service = await this.serviceRepository.findOne({
       where: { _id: new ObjectId(serviceId) },

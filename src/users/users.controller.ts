@@ -140,32 +140,6 @@ export class UsersController {
     return { message: 'Service provider application submitted', service };
   }
 
-  @Get('approve-vendor')
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Approve a vendor' })
-  @ApiResponse({
-    status: 200,
-    description: 'Vendor approved successfully',
-    type: Service,
-  })
-  async approveVendor(@Query('id') id: string) {
-    const service = await this.serviceService.approveVendor(id);
-    return { message: 'Vendor approved successfully', service };
-  }
-
-  @Get('reject-vendor')
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Reject a vendor' })
-  @ApiResponse({
-    status: 200,
-    description: 'Vendor rejected',
-    type: Service,
-  })
-  async rejectVendor(@Query('id') id: ObjectId) {
-    const service = await this.serviceService.rejectVendor(id);
-    return { message: 'Vendor rejected', service };
-  }
-
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: CreateUserDto) {
     return this.usersService.update(+id, updateUserDto);
