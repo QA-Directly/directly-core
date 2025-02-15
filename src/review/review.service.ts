@@ -1,11 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Review } from './entities/review.entity';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { Service } from 'src/service/entities/service.entity';
 import { ObjectId } from 'mongodb';
-import { UsersService } from 'src/users/users.service';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ReviewService {
@@ -14,7 +14,8 @@ export class ReviewService {
     private readonly reviewRepository: Repository<Review>,
     @InjectRepository(Service)
     private readonly serviceRepository: Repository<Service>,
-    private readonly userService: UsersService,
+    @InjectRepository(User)
+    private readonly userRepostiory: Repository<User>,
   ) {}
 
   async addReview(dto: CreateReviewDto) {
@@ -24,11 +25,10 @@ export class ReviewService {
       );
     }
     const review = this.reviewRepository.create(dto);
-    await this.reviewRepository.save(review);
 
     await this.updateServiceAverageRating(dto.serviceId);
-    const reviewer = await this.userService.findUser(dto.userId);
-    return { review: review, reviewer: reviewer };
+
+    return await this.reviewRepository.save(review);
   }
 
   async updateServiceAverageRating(serviceId: ObjectId) {
@@ -47,6 +47,10 @@ export class ReviewService {
   }
 
   async getServiceReviews(serviceId: ObjectId) {
-    return await this.reviewRepository.find({ where: { serviceId } });
+    const reviewer = await this.userRepostiory.findOne({
+      where: { serviceId: serviceId },
+    });
+    const review = await this.reviewRepository.find({ where: { serviceId } });
+    return { review: review, reviewer: reviewer };
   }
 }
