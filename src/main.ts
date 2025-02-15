@@ -25,6 +25,10 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('users', 'Endpoints for users')
     .addTag('auth', 'Endpoints for authentication')
+    .addTag('services', 'Endpoints for services')
+    .addTag('reviews', 'Endpoints for reviews')
+    .addTag('bookings', 'Endpoints for bookings')
+    .addTag('admin', 'Endpoints for admin')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
