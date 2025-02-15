@@ -64,19 +64,16 @@ export class ServiceService {
 
   async findAll() {
     const services = await this.serviceRepository.find();
-    const userIds = services.map((service) => service.userId.toString());
 
-    const users = await this.userRepository.find({
-      where: { _id: In(userIds) },
-    });
-
-    const userMap = new Map(
-      users.map((user) => [user._id.toString(), user.profilePicture]),
+    const users = await Promise.all(
+      services.map((service) =>
+        this.userRepository.findOne({ where: { _id: service.userId } }),
+      ),
     );
 
-    return services.map((service) => ({
+    return services.map((service, index) => ({
       ...service,
-      profilePicture: userMap.get(service.userId.toString()) || null,
+      profilePicture: users[index]?.profilePicture || null,
     }));
   }
 
