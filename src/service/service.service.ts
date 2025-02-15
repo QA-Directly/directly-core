@@ -35,6 +35,7 @@ export class ServiceService {
 
     const createdService = this.serviceRepository.create({
       userId: user._id,
+      profilePicture: user.profilePicture,
       status: 'pending',
       ...serviceDto,
     });
