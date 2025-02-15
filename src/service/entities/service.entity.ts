@@ -40,6 +40,9 @@ export class Service {
   description: string;
 
   @Column()
+  profilePicture: string;
+
+  @Column()
   idImage: string;
 
   @Column({ default: 'pending' })
